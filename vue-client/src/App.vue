@@ -143,9 +143,6 @@ export default {
       if (this.backend) {
         // Вызываем метод из C++
         this.calculationResult = this.backend.calculate(this.num1, this.num2);
-      } else {
-        // Для режима разработки без Qt
-        this.calculationResult = this.num1 + this.num2;
       }
     },
   },
