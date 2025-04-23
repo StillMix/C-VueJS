@@ -81,27 +81,32 @@ export default {
   },
   methods: {
     initQtConnection() {
-      // Подключаемся к WebChannel после его доступности
-      new window.QWebChannel(window.qt.webChannelTransport, (channel) => {
-        // Получаем объект backend из C++
-        this.backend = channel.objects.backend;
+      return new Promise((resolve, reject) => {
+        new window.QWebChannel(window.qt.webChannelTransport, (channel) => {
+          this.backend = channel.objects.backend;
 
-        // Получаем сообщение из C++
-        this.messageFromCpp = this.backend.getMessage();
+          // Получаем сообщение из C++
+          this.backend
+            .getMessage()
+            .then((message) => {
+              // Если это асинхронный метод
+              this.messageFromCpp = message;
+              resolve();
+            })
+            .catch(reject); // Если ошибка
 
-        // Подписываемся на сигналы от C++
-        this.backend.dataChanged.connect((newData) => {
-          this.processedData = newData;
-        });
+          this.backend.dataChanged.connect((newData) => {
+            this.processedData = newData;
+          });
 
-        this.backend.progressUpdated.connect((progress) => {
-          this.progress = progress;
-          if (progress === 100) {
-            // Скрываем прогресс-бар через 1 секунду после завершения
-            setTimeout(() => {
-              this.showProgress = false;
-            }, 1000);
-          }
+          this.backend.progressUpdated.connect((progress) => {
+            this.progress = progress;
+            if (progress === 100) {
+              setTimeout(() => {
+                this.showProgress = false;
+              }, 1000);
+            }
+          });
         });
       });
     },
@@ -110,39 +115,38 @@ export default {
       if (!this.userInput.trim()) return;
 
       if (this.backend) {
-        // Обнуляем предыдущие данные
         this.processedData = "";
         this.progress = 0;
         this.showProgress = true;
 
-        // Отправляем данные в C++
-        this.backend.processData(this.userInput);
-      } else {
-        // Для режима разработки без Qt
-        this.processedData = "Режим разработки: " + this.userInput;
-
-        // Эмуляция прогресса
-        this.showProgress = true;
-        let progress = 0;
-        const interval = setInterval(() => {
-          progress += 10;
-          this.progress = progress;
-          if (progress >= 100) {
-            clearInterval(interval);
-            setTimeout(() => {
-              this.showProgress = false;
-            }, 1000);
-          }
-        }, 200);
+        // Здесь нужно использовать await, если метод асинхронный
+        this.backend
+          .processData(this.userInput)
+          .then(() => {
+            console.log("Данные отправлены и обработаны!");
+          })
+          .catch((error) => {
+            console.error("Ошибка при отправке данных в C++", error);
+          });
       }
     },
 
     calculate() {
       if (this.num1 === null || this.num2 === null) return;
-
-      if (this.backend) {
-        // Вызываем метод из C++
-        this.calculationResult = this.backend.calculate(this.num1, this.num2);
+      else {
+        return new Promise((resolve, reject) => {
+          if (this.backend) {
+            // Вызываем метод из C++ синхронно
+            this.calculationResult = this.backend
+              .calculate(this.num1, this.num2)
+              .then((message) => {
+                // Если это асинхронный метод
+                this.calculationResult = message;
+                resolve();
+              })
+              .catch(reject);
+          }
+        });
       }
     },
   },
