@@ -3,7 +3,13 @@
 <RCC version="1.0">
     <qresource prefix="/">
         <file>vue-client/dist/index.html</file>
+        <file>vue-client/dist/manifest.json</file>
+        <file>vue-client/dist/qwebchannel.js</file>
+        <file>vue-client/dist/service-worker.js</file>
+        <file>vue-client/dist/service-worker.js.map</file>
         <file>vue-client/dist/js/app.js</file>
+        <file>vue-client/dist/js/about.js</file>
+        <file>vue-client/dist/js/chunk-vendors.js</file>
         <file>vue-client/dist/css/app.css</file>
     </qresource>
 </RCC>

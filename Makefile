@@ -14,10 +14,10 @@ EQ            = =
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -DQT_NO_DEBUG -DQT_WEBENGINEWIDGETS_LIB -DQT_PRINTSUPPORT_LIB -DQT_WIDGETS_LIB -DQT_WEBENGINE_LIB -DQT_WEBENGINECORE_LIB -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_QMLMODELS_LIB -DQT_WEBCHANNEL_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_POSITIONING_LIB -DQT_CORE_LIB
+DEFINES       = -DQT_NO_DEBUG -DQT_WEBENGINEWIDGETS_LIB -DQT_PRINTSUPPORT_LIB -DQT_WIDGETS_LIB -DQT_WEBENGINE_LIB -DQT_WEBENGINECORE_LIB -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_QMLMODELS_LIB -DQT_WEBCHANNEL_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_POSITIONING_LIB -DQT_CONCURRENT_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O2 -Wall -Wextra -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -O2 -std=gnu++1z -Wall -Wextra -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I. -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngine -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineCore -I/usr/include/x86_64-linux-gnu/qt5/QtQuick -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtQmlModels -I/usr/include/x86_64-linux-gnu/qt5/QtWebChannel -I/usr/include/x86_64-linux-gnu/qt5/QtQml -I/usr/include/x86_64-linux-gnu/qt5/QtNetwork -I/usr/include/x86_64-linux-gnu/qt5/QtPositioning -I/usr/include/x86_64-linux-gnu/qt5/QtCore -Ibin/dep/moc -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++
+INCPATH       = -I. -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngine -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineCore -I/usr/include/x86_64-linux-gnu/qt5/QtQuick -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtQmlModels -I/usr/include/x86_64-linux-gnu/qt5/QtWebChannel -I/usr/include/x86_64-linux-gnu/qt5/QtQml -I/usr/include/x86_64-linux-gnu/qt5/QtNetwork -I/usr/include/x86_64-linux-gnu/qt5/QtPositioning -I/usr/include/x86_64-linux-gnu/qt5/QtConcurrent -I/usr/include/x86_64-linux-gnu/qt5/QtCore -Ibin/dep/moc -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++
 QMAKE         = /usr/lib/qt5/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -40,7 +40,7 @@ DISTNAME      = VueQtApp1.0.0
 DISTDIR = /home/still/Desktop/C++/bin/dep/obj/VueQtApp1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-O1 -Wl,-rpath-link,/usr/lib/x86_64-linux-gnu
-LIBS          = $(SUBLIBS) /usr/lib/x86_64-linux-gnu/libQt5WebEngineWidgets.so /usr/lib/x86_64-linux-gnu/libQt5PrintSupport.so /usr/lib/x86_64-linux-gnu/libQt5Widgets.so /usr/lib/x86_64-linux-gnu/libQt5WebEngine.so /usr/lib/x86_64-linux-gnu/libQt5WebEngineCore.so /usr/lib/x86_64-linux-gnu/libQt5Quick.so /usr/lib/x86_64-linux-gnu/libQt5Gui.so /usr/lib/x86_64-linux-gnu/libQt5QmlModels.so /usr/lib/x86_64-linux-gnu/libQt5WebChannel.so /usr/lib/x86_64-linux-gnu/libQt5Qml.so /usr/lib/x86_64-linux-gnu/libQt5Network.so /usr/lib/x86_64-linux-gnu/libQt5Positioning.so /usr/lib/x86_64-linux-gnu/libQt5Core.so -lGL -lpthread   
+LIBS          = $(SUBLIBS) /usr/lib/x86_64-linux-gnu/libQt5WebEngineWidgets.so /usr/lib/x86_64-linux-gnu/libQt5PrintSupport.so /usr/lib/x86_64-linux-gnu/libQt5Widgets.so /usr/lib/x86_64-linux-gnu/libQt5WebEngine.so /usr/lib/x86_64-linux-gnu/libQt5WebEngineCore.so /usr/lib/x86_64-linux-gnu/libQt5Quick.so /usr/lib/x86_64-linux-gnu/libQt5Gui.so /usr/lib/x86_64-linux-gnu/libQt5QmlModels.so /usr/lib/x86_64-linux-gnu/libQt5WebChannel.so /usr/lib/x86_64-linux-gnu/libQt5Qml.so /usr/lib/x86_64-linux-gnu/libQt5Network.so /usr/lib/x86_64-linux-gnu/libQt5Positioning.so /usr/lib/x86_64-linux-gnu/libQt5Concurrent.so /usr/lib/x86_64-linux-gnu/libQt5Core.so -lGL -lpthread   
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -392,9 +392,15 @@ compiler_rcc_clean:
 	-$(DEL_FILE) bin/dep/rcc/qrc_resources.cpp
 bin/dep/rcc/qrc_resources.cpp: resources.qrc \
 		/usr/lib/qt5/bin/rcc \
+		vue-client/dist/qwebchannel.js \
+		vue-client/dist/service-worker.js.map \
+		vue-client/dist/service-worker.js \
+		vue-client/dist/manifest.json \
 		vue-client/dist/index.html \
 		vue-client/dist/css/app.css \
-		vue-client/dist/js/app.js
+		vue-client/dist/js/chunk-vendors.js \
+		vue-client/dist/js/app.js \
+		vue-client/dist/js/about.js
 	/usr/lib/qt5/bin/rcc -name resources resources.qrc -o bin/dep/rcc/qrc_resources.cpp
 
 compiler_moc_predefs_make_all: bin/dep/moc/moc_predefs.h
@@ -409,7 +415,7 @@ compiler_moc_header_clean:
 bin/dep/moc/moc_backend.cpp: cpp-server/src/backend.h \
 		bin/dep/moc/moc_predefs.h \
 		/usr/lib/qt5/bin/moc
-	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/still/Desktop/C++/bin/dep/moc/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/still/Desktop/C++ -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngine -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineCore -I/usr/include/x86_64-linux-gnu/qt5/QtQuick -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtQmlModels -I/usr/include/x86_64-linux-gnu/qt5/QtWebChannel -I/usr/include/x86_64-linux-gnu/qt5/QtQml -I/usr/include/x86_64-linux-gnu/qt5/QtNetwork -I/usr/include/x86_64-linux-gnu/qt5/QtPositioning -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13 -I/usr/include/c++/13/backward -I/usr/lib/gcc/x86_64-linux-gnu/13/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include cpp-server/src/backend.h -o bin/dep/moc/moc_backend.cpp
+	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/still/Desktop/C++/bin/dep/moc/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/still/Desktop/C++ -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngine -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineCore -I/usr/include/x86_64-linux-gnu/qt5/QtQuick -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtQmlModels -I/usr/include/x86_64-linux-gnu/qt5/QtWebChannel -I/usr/include/x86_64-linux-gnu/qt5/QtQml -I/usr/include/x86_64-linux-gnu/qt5/QtNetwork -I/usr/include/x86_64-linux-gnu/qt5/QtPositioning -I/usr/include/x86_64-linux-gnu/qt5/QtConcurrent -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13 -I/usr/include/c++/13/backward -I/usr/lib/gcc/x86_64-linux-gnu/13/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include cpp-server/src/backend.h -o bin/dep/moc/moc_backend.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:

@@ -1,7 +1,7 @@
 // backend.cpp - Реализация класса Backend
 #include "backend.h"
 #include <QDebug>
-
+#include <QThread>
 Backend::Backend(QObject *parent) : QObject(parent) {
     m_message = "Привет из C++!";
 }

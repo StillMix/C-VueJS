@@ -1,5 +1,5 @@
 # project.pro - Файл проекта для qmake
-QT += core gui widgets webengine webenginewidgets
+QT += core gui widgets webengine webenginewidgets concurrent
 
 CONFIG += c++17
 

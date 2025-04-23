@@ -4,6 +4,7 @@ module.exports = defineConfig({
 });
 
 module.exports = {
+  filenameHashing: false,
   // Базовый путь для собранного приложения
   publicPath: process.env.NODE_ENV === "production" ? "./" : "/",
 
