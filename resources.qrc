@@ -1,9 +1,9 @@
-# resources.qrc - Файл ресурсов Qt
 <!DOCTYPE RCC>
+<!-- resources.qrc - Файл ресурсов Qt -->
 <RCC version="1.0">
     <qresource prefix="/">
-        <file>frontend/dist/index.html</file>
-        <file>frontend/dist/js/app.js</file>
-        <file>frontend/dist/css/app.css</file>
+        <file>vue-client/dist/index.html</file>
+        <file>vue-client/dist/js/app.js</file>
+        <file>vue-client/dist/css/app.css</file>
     </qresource>
 </RCC>

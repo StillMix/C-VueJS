@@ -1,4 +1,3 @@
-// CMakeLists.txt - Файл для сборки проекта с CMake
 cmake_minimum_required(VERSION 3.14)
 project(VueQtApp LANGUAGES CXX)
 
@@ -12,9 +11,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt5 COMPONENTS Core Gui Widgets WebEngine WebEngineWidgets REQUIRED)
 
 add_executable(${PROJECT_NAME}
-    main.cpp
-    backend.h
-    backend.cpp
+    src/main.cpp
+    src/backend.h
+    src/backend.cpp
     resources.qrc
 )
 
@@ -29,6 +28,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 # Копируем файлы Vue.js в директорию с бинарником
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/frontend/dist
+    ${CMAKE_SOURCE_DIR}/../vue-client/dist
     $<TARGET_FILE_DIR:${PROJECT_NAME}>/frontend/dist
 )
