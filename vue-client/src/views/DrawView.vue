@@ -58,8 +58,16 @@ import ImageGallery from "@/components/ImageGallery.vue";
 import ImageViewModal from "@/components/ImageViewModal.vue";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal.vue";
 import UploadModal from "@/components/UploadModal.vue";
-import initialImages from "../assets/human/images";
-
+// import initialImages from "../assets/human/images";
+declare global {
+  interface Window {
+    QWebChannel?: any;
+    qt?: {
+      webChannelTransport?: any;
+    };
+    backend?: any;
+  }
+}
 @Options({
   components: {
     Header,
@@ -72,7 +80,8 @@ import initialImages from "../assets/human/images";
 })
 export default class DrawView extends Vue {
   // Данные
-  imagesCard = initialImages;
+  backend: any = null;
+  imagesCard: string[] = [];
   currentFilter = "all";
   favorites: string[] = [];
   selectedImage: string | null = null;
@@ -80,7 +89,13 @@ export default class DrawView extends Vue {
   showDeleteConfirm = false;
   showUpload = false;
   uploadPreview: string | null = null;
-
+  data() {
+    return {
+      backend: null as any,
+      imagesCard: [] as any[],
+      favorites: [] as any[],
+    };
+  }
   mounted() {
     // Загружаем избранные из localStorage
     const savedFavorites = localStorage.getItem("favorites");
@@ -90,6 +105,49 @@ export default class DrawView extends Vue {
 
     // Добавляем обработчик клавиш для навигации в модальном окне
     window.addEventListener("keydown", this.handleKeyPress);
+    if (
+      typeof window !== "undefined" &&
+      typeof window.qt !== "undefined" &&
+      typeof window.QWebChannel !== "undefined" &&
+      typeof window.qt.webChannelTransport !== "undefined"
+    ) {
+      this.loadImagesFromCpp();
+    } else {
+      alert("Режим разработки (без Qt или webChannelTransport)");
+    }
+  }
+  loadImagesFromCpp(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      if (
+        typeof window !== "undefined" &&
+        typeof window.qt !== "undefined" &&
+        typeof window.qt.webChannelTransport !== "undefined" &&
+        typeof window.QWebChannel !== "undefined"
+      ) {
+        new window.QWebChannel(
+          window.qt.webChannelTransport,
+          (channel: any) => {
+            this.backend = channel.objects.backend;
+            alert("Пробуем загрузится!");
+            this.backend
+              .getDrawingImages()
+              .then((images: any) => {
+                if (Array.isArray(images)) {
+                  this.imagesCard = images;
+                  alert(this.imagesCard);
+                } else {
+                  console.error(
+                    "Полученные данные не являются массивом:",
+                    images
+                  );
+                }
+                resolve();
+              })
+              .catch(reject);
+          }
+        );
+      }
+    });
   }
 
   beforeUnmount() {

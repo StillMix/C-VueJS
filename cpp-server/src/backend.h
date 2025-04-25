@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 // Класс, который будет доступен из JavaScript
 class Backend : public QObject {
@@ -17,6 +18,9 @@ public slots:
     QString getMessage();
     void processData(const QString &data);
     int calculate(int a, int b);
+    
+    // Новый метод для получения списка изображений
+    QStringList getDrawingImages();
     
 signals:
     // Сигналы, которые будут отправляться в JavaScript

@@ -1,6 +1,12 @@
 <template>
   <div id="app">
     <BackgroundAnimation :theme="currentTheme" />
+    <div v-if="showDevNotification" class="dev-notification">
+      Режим разработки (без Qt)
+      <button class="dev-notification__close" @click="closeDevNotification">
+        ×
+      </button>
+    </div>
     <router-view v-slot="{ Component }">
       <transition name="page" mode="out-in">
         <component :is="Component" />
@@ -20,6 +26,17 @@ interface ThemeChangeEvent extends Event {
   };
 }
 
+// Расширяем глобальный интерфейс Window для TypeScript
+declare global {
+  interface Window {
+    QWebChannel?: any;
+    qt?: {
+      webChannelTransport?: any;
+    };
+    backend?: any;
+  }
+}
+
 @Options({
   components: {
     BackgroundAnimation,
@@ -28,6 +45,10 @@ interface ThemeChangeEvent extends Event {
 export default class App extends Vue {
   // Устанавливаем начальную тему
   currentTheme = "FlowOfRoses";
+  // Добавляем свойство для сообщения из C++
+  messageFromCpp = "";
+  // Добавляем свойство для управления видимостью уведомления
+  showDevNotification = false;
 
   mounted() {
     // Проверяем сохраненную тему при загрузке приложения
@@ -43,6 +64,20 @@ export default class App extends Vue {
     // Подписываемся на событие изменения темы
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     window.addEventListener("themeChanged", this.handleThemeChange as any);
+
+    // Ожидаем, когда QWebChannel будет доступен
+    window.onload = () => {
+      if (window.QWebChannel && window.qt && window.qt.webChannelTransport) {
+        this.initQtConnection();
+      } else {
+        // Если QWebChannel не доступен, предположим, что мы в режиме разработки
+        console.log(
+          "QWebChannel не найден, используем заглушки для разработки"
+        );
+        this.messageFromCpp = "Режим разработки (без Qt)";
+        this.showDevNotification = true;
+      }
+    };
   }
 
   beforeUnmount() {
@@ -54,6 +89,36 @@ export default class App extends Vue {
     if (event.detail && event.detail.theme) {
       this.currentTheme = event.detail.theme;
     }
+  }
+
+  // Метод для инициализации соединения с Qt
+  async initQtConnection() {
+    if (!window.QWebChannel || !window.qt || !window.qt.webChannelTransport) {
+      console.error("QWebChannel или WebChannelTransport не доступны");
+      return;
+    }
+
+    new window.QWebChannel(
+      window.qt.webChannelTransport,
+      async (channel: any) => {
+        const backend = channel.objects.backend;
+        window.backend = backend;
+
+        try {
+          const message = await backend.getMessage();
+          this.messageFromCpp = message;
+          console.log("Сообщение из C++:", message);
+          alert(message);
+        } catch (error) {
+          console.error("Ошибка при получении сообщения:", error);
+        }
+      }
+    );
+  }
+
+  // Метод для закрытия уведомления о режиме разработки
+  closeDevNotification() {
+    this.showDevNotification = false;
   }
 }
 </script>
@@ -86,5 +151,43 @@ export default class App extends Vue {
 .page-leave-to {
   opacity: 0;
   transform: translateX(-20px);
+}
+
+/* Стиль для уведомления о режиме разработки */
+.dev-notification {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  background-color: rgba(255, 193, 7, 0.9);
+  color: #333;
+  padding: 10px 15px;
+  border-radius: 5px;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  animation: slide-in 0.3s ease-out;
+}
+
+.dev-notification__close {
+  margin-left: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #333;
+  padding: 0 5px;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 </style>

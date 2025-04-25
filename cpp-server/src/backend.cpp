@@ -2,6 +2,9 @@
 #include "backend.h"
 #include <QDebug>
 #include <QThread>
+#include <QDir>
+#include <QFileInfo>
+
 Backend::Backend(QObject *parent) : QObject(parent) {
     m_message = "Привет из C++!";
 }
@@ -30,4 +33,35 @@ void Backend::processData(const QString &data) {
 int Backend::calculate(int a, int b) {
     qDebug() << "Выполняется вычисление:" << a << "+" << b;
     return a + b;
+}
+
+QStringList Backend::getDrawingImages() {
+    qDebug() << "JavaScript запросил список изображений";
+    
+    QStringList images;
+    
+    // Путь к директории с изображениями
+    QString path = "/drawings";
+    
+    QDir directory(path);
+    if (!directory.exists()) {
+        qWarning() << "Директория" << path << "не существует!";
+        return images;
+    }
+    
+    // Фильтр для поиска только изображений
+    QStringList filters;
+    filters << "*.jpg" << "*.jpeg" << "*.png" << "*.gif" << "*.bmp";
+    directory.setNameFilters(filters);
+    
+    // Получаем список файлов, соответствующих фильтру
+    QFileInfoList fileList = directory.entryInfoList();
+    
+    // Проходим по списку файлов и добавляем их имена в результат
+    for (const QFileInfo &fileInfo : fileList) {
+        images.append(fileInfo.fileName());
+    }
+    
+    qDebug() << "Найдено" << images.size() << "изображений";
+    return images;
 }
