@@ -11,7 +11,7 @@
           @color-change="updateColor"
           @thickness-change="updateThickness"
           @clear="clearDrawing"
-          @finish="finishDrawing"
+          @finish="saveDrawing"
         />
 
         <div class="image-editor__canvas-container">
@@ -143,6 +143,7 @@ export default class ImageEditorView extends Vue {
     const canvas = this.$refs.drawingCanvas as InstanceType<
       typeof DrawingCanvas
     >;
+    typeof DrawingCanvas;
     if (canvas) {
       canvas.clearDrawing();
       this.hasDrawn = false;
@@ -167,24 +168,22 @@ export default class ImageEditorView extends Vue {
     }
   }
 
-  finishDrawing() {
-    const canvas = this.$refs.drawingCanvas as InstanceType<
-      typeof DrawingCanvas
-    >;
-    if (canvas) {
-      // Получаем изображение только с линиями
-      this.linesOnlyImage = canvas.getLinesOnly();
-      this.showPreview = true;
-    }
-  }
+  // Удалён метод finishDrawing, так как он объединён с saveDrawing
 
   saveDrawing() {
     const canvas = this.$refs.drawingCanvas as InstanceType<
       typeof DrawingCanvas
     >;
+    typeof DrawingCanvas;
     if (canvas) {
-      const imageWithLines = canvas.getImageWithLines();
+      // Получаем изображение только с линиями и отображаем предпросмотр
+      this.linesOnlyImage = canvas.getLinesOnly();
+      this.showPreview = true;
 
+      // Если мы решим не показывать предпросмотр, то код ниже можно раскомментировать
+      /*
+      const imageWithLines = canvas.getImageWithLines();
+      
       // В реальном приложении здесь был бы код для сохранения изображения
       // Например, отправка на сервер
 
@@ -196,6 +195,7 @@ export default class ImageEditorView extends Vue {
 
       // Возвращаемся на предыдущую страницу
       this.$router.back();
+      */
     }
   }
 
@@ -208,8 +208,17 @@ export default class ImageEditorView extends Vue {
     link.href = this.linesOnlyImage;
     link.click();
 
-    // Закрываем модальное окно
+    // Закрываем модальное окно после скачивания
     this.showPreview = false;
+
+    // Временно сохраняем в localStorage для демонстрации
+    localStorage.setItem("savedDrawing", this.linesOnlyImage);
+
+    // Показываем сообщение пользователю
+    alert("Изображение успешно сохранено!");
+
+    // Возвращаемся на предыдущую страницу
+    this.$router.back();
   }
 }
 </script>
@@ -254,12 +263,13 @@ export default class ImageEditorView extends Vue {
 
   &__canvas-container {
     margin: 20px 0;
-    height: 800px;
+    height: 600px; // Уменьшил высоту для лучшей производительности
     width: 800px;
     margin-left: auto;
     margin-right: auto;
   }
 
+  /* Остальные стили без изменений */
   &__controls {
     display: flex;
     justify-content: space-between;
@@ -336,5 +346,61 @@ export default class ImageEditorView extends Vue {
     justify-content: center;
     padding: 20px;
   }
+
+  &__preview-content {
+    background-color: white;
+    border-radius: 12px;
+    max-width: 80%;
+    max-height: 80vh;
+    padding: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__preview-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #333;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  &__preview-image-container {
+    margin: 20px 0;
+    max-width: 100%;
+    overflow: auto;
+  }
+
+  &__preview-image {
+    max-width: 100%;
+    display: block;
+  }
+
+  &__preview-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+}
+
+// Анимация для модального окна
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
 }
 </style>

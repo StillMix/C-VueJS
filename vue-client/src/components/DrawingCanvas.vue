@@ -1,3 +1,4 @@
+// Исправленный компонент DrawingCanvas.vue
 <template>
   <div class="drawing-canvas" ref="canvasContainer">
     <canvas
@@ -56,6 +57,15 @@ export default class DrawingCanvas extends Vue {
   canvasHeight = 600;
   originalImage: HTMLImageElement | null = null;
   imageLoaded = false;
+  // Сохраняем историю рисования для анимации
+  drawingCommands: Array<{
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    color: string;
+    width: number;
+  }> = [];
 
   mounted() {
     this.initCanvas();
@@ -164,11 +174,18 @@ export default class DrawingCanvas extends Vue {
   }
 
   redrawLines() {
-    // Эта функция перерисовывает все линии при изменении размера холста
-    // В реальном приложении здесь нужно было бы сохранять и восстанавливать
-    // нарисованные линии
-    // Для простоты примера мы просто очищаем холст рисования
+    // Очищаем холст рисования
     this.drawContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+    // Перерисовываем все линии из истории рисования
+    for (const cmd of this.drawingCommands) {
+      this.drawContext.strokeStyle = cmd.color;
+      this.drawContext.lineWidth = cmd.width;
+      this.drawContext.beginPath();
+      this.drawContext.moveTo(cmd.x1, cmd.y1);
+      this.drawContext.lineTo(cmd.x2, cmd.y2);
+      this.drawContext.stroke();
+    }
   }
 
   startDrawing(event: MouseEvent) {
@@ -193,6 +210,16 @@ export default class DrawingCanvas extends Vue {
     this.drawContext.lineTo(offsetX, offsetY);
     this.drawContext.stroke();
 
+    // Добавляем команду в историю
+    this.drawingCommands.push({
+      x1: this.lastX,
+      y1: this.lastY,
+      x2: offsetX,
+      y2: offsetY,
+      color: this.color,
+      width: this.thickness,
+    });
+
     // Обновляем последние координаты
     this.lastX = offsetX;
     this.lastY = offsetY;
@@ -211,6 +238,7 @@ export default class DrawingCanvas extends Vue {
     const canvas = this.$refs.drawCanvas as HTMLElement;
     const rect = canvas.getBoundingClientRect();
 
+    // Создаем синтетическое событие мыши
     const mouseEvent = new MouseEvent("mousemove", {
       clientX: touch.clientX,
       clientY: touch.clientY,
@@ -225,6 +253,7 @@ export default class DrawingCanvas extends Vue {
     const scaleX = this.canvasWidth / rect.width;
     const scaleY = this.canvasHeight / rect.height;
 
+    // Точно высчитываем координаты курсора относительно холста
     return {
       offsetX: (event.clientX - rect.left) * scaleX,
       offsetY: (event.clientY - rect.top) * scaleY,
@@ -234,6 +263,7 @@ export default class DrawingCanvas extends Vue {
   // Метод для очистки холста рисования
   clearDrawing() {
     this.drawContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+    this.drawingCommands = []; // Очищаем историю рисования
     this.$emit("drawing-updated");
   }
 
@@ -279,17 +309,29 @@ export default class DrawingCanvas extends Vue {
     tempContext.fillStyle = "#ffffff";
     tempContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-    // Копируем содержимое холста с линиями
-    tempContext.drawImage(
-      this.$refs.drawCanvas as HTMLCanvasElement,
-      0,
-      0,
-      this.canvasWidth,
-      this.canvasHeight
-    );
-
     // Возвращаем данные изображения в формате base64
-    return tempCanvas.toDataURL("image/png");
+    return this.animateDrawing(tempCanvas, tempContext);
+  }
+
+  // Новый метод для анимации рисования линий
+  animateDrawing(
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D
+  ): string {
+    // Для демонстрации сразу нарисуем все линии
+    // (в реальном приложении здесь была бы анимация)
+    for (const cmd of this.drawingCommands) {
+      ctx.strokeStyle = cmd.color;
+      ctx.lineWidth = cmd.width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(cmd.x1, cmd.y1);
+      ctx.lineTo(cmd.x2, cmd.y2);
+      ctx.stroke();
+    }
+
+    return canvas.toDataURL("image/png");
   }
 }
 </script>
@@ -306,7 +348,6 @@ export default class DrawingCanvas extends Vue {
 
   &__image,
   &__drawing {
-    object-fit: contain;
     position: absolute;
     top: 0;
     left: 0;

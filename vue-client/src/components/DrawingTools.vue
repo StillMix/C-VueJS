@@ -46,7 +46,8 @@
         class="drawing-tools__btn drawing-tools__btn--finish"
         @click="$emit('finish')"
       >
-        Готово
+        Сохранить
+        <!-- Изменено с "Готово" на "Сохранить" -->
       </button>
     </div>
   </div>
