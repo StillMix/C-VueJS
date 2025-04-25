@@ -41,7 +41,7 @@ QStringList Backend::getDrawingImages() {
     QStringList images;
     
     // Путь к директории с изображениями
-    QString path = "/drawings";
+    QString path = "./drawings";
     
     QDir directory(path);
     if (!directory.exists()) {

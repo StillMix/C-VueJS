@@ -108,7 +108,6 @@ export default class App extends Vue {
           const message = await backend.getMessage();
           this.messageFromCpp = message;
           console.log("Сообщение из C++:", message);
-          alert(message);
         } catch (error) {
           console.error("Ошибка при получении сообщения:", error);
         }

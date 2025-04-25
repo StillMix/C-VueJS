@@ -256,9 +256,6 @@ export default class ImageEditorView extends Vue {
     // Временно сохраняем в localStorage для демонстрации
     localStorage.setItem("savedDrawing", this.linesOnlyImage);
 
-    // Показываем сообщение пользователю
-    alert("Изображение успешно сохранено!");
-
     // Возвращаемся на предыдущую страницу
     this.$router.back();
   }

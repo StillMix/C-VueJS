@@ -112,8 +112,6 @@ export default class DrawView extends Vue {
       typeof window.qt.webChannelTransport !== "undefined"
     ) {
       this.loadImagesFromCpp();
-    } else {
-      alert("Режим разработки (без Qt или webChannelTransport)");
     }
   }
   loadImagesFromCpp(): Promise<void> {
@@ -128,13 +126,11 @@ export default class DrawView extends Vue {
           window.qt.webChannelTransport,
           (channel: any) => {
             this.backend = channel.objects.backend;
-            alert("Пробуем загрузится!");
             this.backend
               .getDrawingImages()
               .then((images: any) => {
                 if (Array.isArray(images)) {
                   this.imagesCard = images;
-                  alert(this.imagesCard);
                 } else {
                   console.error(
                     "Полученные данные не являются массивом:",
@@ -232,7 +228,6 @@ export default class DrawView extends Vue {
         })
         .catch((err) => {
           console.error("Ошибка перехода:", err);
-          alert("Функция рисования будет доступна в ближайшем обновлении");
         });
 
       // Закрываем модальное окно
@@ -252,7 +247,6 @@ export default class DrawView extends Vue {
         document.body.removeChild(link);
       } catch (error) {
         console.error("Ошибка при скачивании изображения:", error);
-        alert("Не удалось скачать изображение");
       }
     }
   }
@@ -314,8 +308,6 @@ export default class DrawView extends Vue {
       // Сбрасываем состояние загрузки
       this.uploadPreview = null;
       this.showUpload = false;
-
-      alert("Изображение успешно загружено!");
     }
   }
 }
