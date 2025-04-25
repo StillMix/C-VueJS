@@ -50,6 +50,13 @@ import { Options, Vue } from "vue-class-component";
     },
   },
   emits: ["drawing-updated", "replay-complete"],
+  watch: {
+    // Добавляем наблюдатель за изменением showImage
+    showImage: function (newVal, oldVal) {
+      // При изменении showImage перерисовываем холст
+      this.drawImageOnCanvas();
+    },
+  },
 })
 export default class DrawingCanvas extends Vue {
   imageUrl!: string;

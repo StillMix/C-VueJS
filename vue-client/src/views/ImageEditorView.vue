@@ -94,7 +94,7 @@
               class="image-editor__btn image-editor__btn--save"
               @click="downloadDrawing"
             >
-              Скачать
+              Сохранить
             </button>
           </div>
         </div>
