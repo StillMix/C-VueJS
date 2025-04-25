@@ -21,7 +21,8 @@ SOURCES += \
     cpp-server/src/drawings_handler.cpp
 
 HEADERS += \
-    cpp-server/src/backend.h
+    cpp-server/src/backend.h \
+    cpp-server/src/drawings_handler.h
 
 RESOURCES += \
     resources.qrc

@@ -55,12 +55,14 @@ OBJECTS_DIR   = bin/dep/obj/
 SOURCES       = cpp-server/src/main.cpp \
 		cpp-server/src/backend.cpp \
 		cpp-server/src/drawings_handler.cpp bin/dep/rcc/qrc_resources.cpp \
-		bin/dep/moc/moc_backend.cpp
+		bin/dep/moc/moc_backend.cpp \
+		bin/dep/moc/moc_drawings_handler.cpp
 OBJECTS       = bin/dep/obj/main.o \
 		bin/dep/obj/backend.o \
 		bin/dep/obj/drawings_handler.o \
 		bin/dep/obj/qrc_resources.o \
-		bin/dep/obj/moc_backend.o
+		bin/dep/obj/moc_backend.o \
+		bin/dep/obj/moc_drawings_handler.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/linux.conf \
@@ -150,7 +152,8 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exceptions.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
-		project.pro cpp-server/src/backend.h cpp-server/src/main.cpp \
+		project.pro cpp-server/src/backend.h \
+		cpp-server/src/drawings_handler.h cpp-server/src/main.cpp \
 		cpp-server/src/backend.cpp \
 		cpp-server/src/drawings_handler.cpp
 QMAKE_TARGET  = VueQtApp
@@ -365,7 +368,7 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents resources.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents cpp-server/src/backend.h $(DISTDIR)/
+	$(COPY_FILE) --parents cpp-server/src/backend.h cpp-server/src/drawings_handler.h $(DISTDIR)/
 	$(COPY_FILE) --parents cpp-server/src/main.cpp cpp-server/src/backend.cpp cpp-server/src/drawings_handler.cpp $(DISTDIR)/
 
 
@@ -412,13 +415,18 @@ compiler_moc_predefs_clean:
 bin/dep/moc/moc_predefs.h: /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 	g++ -pipe -O2 -std=gnu++1z -Wall -Wextra -dM -E -o bin/dep/moc/moc_predefs.h /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: bin/dep/moc/moc_backend.cpp
+compiler_moc_header_make_all: bin/dep/moc/moc_backend.cpp bin/dep/moc/moc_drawings_handler.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) bin/dep/moc/moc_backend.cpp
+	-$(DEL_FILE) bin/dep/moc/moc_backend.cpp bin/dep/moc/moc_drawings_handler.cpp
 bin/dep/moc/moc_backend.cpp: cpp-server/src/backend.h \
 		bin/dep/moc/moc_predefs.h \
 		/usr/lib/qt5/bin/moc
 	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/still/Desktop/C++/bin/dep/moc/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/still/Desktop/C++ -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngine -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineCore -I/usr/include/x86_64-linux-gnu/qt5/QtQuick -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtQmlModels -I/usr/include/x86_64-linux-gnu/qt5/QtWebChannel -I/usr/include/x86_64-linux-gnu/qt5/QtQml -I/usr/include/x86_64-linux-gnu/qt5/QtNetwork -I/usr/include/x86_64-linux-gnu/qt5/QtPositioning -I/usr/include/x86_64-linux-gnu/qt5/QtConcurrent -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13 -I/usr/include/c++/13/backward -I/usr/lib/gcc/x86_64-linux-gnu/13/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include cpp-server/src/backend.h -o bin/dep/moc/moc_backend.cpp
+
+bin/dep/moc/moc_drawings_handler.cpp: cpp-server/src/drawings_handler.h \
+		bin/dep/moc/moc_predefs.h \
+		/usr/lib/qt5/bin/moc
+	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/still/Desktop/C++/bin/dep/moc/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/still/Desktop/C++ -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngine -I/usr/include/x86_64-linux-gnu/qt5/QtWebEngineCore -I/usr/include/x86_64-linux-gnu/qt5/QtQuick -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtQmlModels -I/usr/include/x86_64-linux-gnu/qt5/QtWebChannel -I/usr/include/x86_64-linux-gnu/qt5/QtQml -I/usr/include/x86_64-linux-gnu/qt5/QtNetwork -I/usr/include/x86_64-linux-gnu/qt5/QtPositioning -I/usr/include/x86_64-linux-gnu/qt5/QtConcurrent -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13 -I/usr/include/c++/13/backward -I/usr/lib/gcc/x86_64-linux-gnu/13/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include cpp-server/src/drawings_handler.h -o bin/dep/moc/moc_drawings_handler.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -451,6 +459,9 @@ bin/dep/obj/qrc_resources.o: bin/dep/rcc/qrc_resources.cpp
 
 bin/dep/obj/moc_backend.o: bin/dep/moc/moc_backend.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o bin/dep/obj/moc_backend.o bin/dep/moc/moc_backend.cpp
+
+bin/dep/obj/moc_drawings_handler.o: bin/dep/moc/moc_drawings_handler.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o bin/dep/obj/moc_drawings_handler.o bin/dep/moc/moc_drawings_handler.cpp
 
 ####### Install
 

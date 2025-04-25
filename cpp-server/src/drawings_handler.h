@@ -10,7 +10,7 @@
 class DrawingsSchemeHandler : public QWebEngineUrlSchemeHandler {
     Q_OBJECT
 public:
-    DrawingsSchemeHandler(QObject *parent = nullptr) : QWebEngineUrlSchemeHandler(parent) {}
+    explicit DrawingsSchemeHandler(QObject *parent = nullptr) : QWebEngineUrlSchemeHandler(parent) {}
     
     void requestStarted(QWebEngineUrlRequestJob *job) override;
 };
