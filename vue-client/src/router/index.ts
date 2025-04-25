@@ -1,3 +1,4 @@
+// vue-client/src/router/index.ts
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 
@@ -11,20 +12,14 @@ const routes: Array<RouteRecordRaw> = [
     path: "/draw",
     name: "draw",
     component: () =>
-      import(/* webpackChunkName: "draw" */ "../views/DrawView.vue"),
+      import(/* webpackChunkName: "about" */ "../views/DrawView.vue"),
   },
   {
-    // Добавляем новый маршрут для Рисовать изображения
-    path: "/edit/:imageName",
-    name: "edit-image",
+    path: "/edit/:image",
+    name: "edit",
     component: () =>
-      import(/* webpackChunkName: "edit" */ "../views/EditImageView.vue"),
-    props: true, // Передаем параметр как props
-  },
-  {
-    // Перехватываем некорректные URL с /draw/... и перенаправляем на /draw
-    path: "/draw/:pathMatch(.*)*",
-    redirect: { name: "draw" },
+      import(/* webpackChunkName: "editor" */ "../views/ImageEditorView.vue"),
+    props: true,
   },
 ];
 
