@@ -22,8 +22,16 @@
             :thickness="currentThickness"
             :showImage="showImage"
             @drawing-updated="drawingUpdated"
+            @replay-complete="onReplayComplete"
           />
         </div>
+
+        <ReplayControls
+          :is-replaying="isReplaying"
+          @replay="startReplay"
+          @stop-replay="stopReplay"
+          @speed-change="updateReplaySpeed"
+        />
 
         <div class="image-editor__controls">
           <div class="image-editor__view-toggle">
@@ -100,12 +108,14 @@ import { Options, Vue } from "vue-class-component";
 import Header from "@/components/Header.vue";
 import DrawingTools from "@/components/DrawingTools.vue";
 import DrawingCanvas from "@/components/DrawingCanvas.vue";
+import ReplayControls from "@/components/ReplayControls.vue";
 
 @Options({
   components: {
     Header,
     DrawingTools,
     DrawingCanvas,
+    ReplayControls,
   },
   props: {
     image: String,
@@ -118,6 +128,8 @@ export default class ImageEditorView extends Vue {
   showImage = true;
   showPreview = false;
   linesOnlyImage = "";
+  isReplaying = false;
+  replaySpeed = 1;
   hasDrawn = false;
 
   getImageUrl(): string {
@@ -167,7 +179,37 @@ export default class ImageEditorView extends Vue {
       this.$router.back();
     }
   }
+  startReplay(speed: number) {
+    const canvas = this.$refs.drawingCanvas as InstanceType<
+      typeof DrawingCanvas
+    >;
+    if (canvas) {
+      this.isReplaying = true;
+      canvas.replayDrawing(speed);
+    }
+  }
 
+  stopReplay() {
+    const canvas = this.$refs.drawingCanvas as InstanceType<
+      typeof DrawingCanvas
+    >;
+    if (canvas) {
+      canvas.stopReplay();
+      this.isReplaying = false;
+    }
+  }
+
+  updateReplaySpeed(speed: number) {
+    this.replaySpeed = speed;
+  }
+
+  onReplayComplete() {
+    this.isReplaying = false;
+  }
+
+  replayInPreview() {
+    // В этой версии просто закрываем предпросмотр и запускаем воспроизведение
+  }
   // Удалён метод finishDrawing, так как он объединён с saveDrawing
 
   saveDrawing() {

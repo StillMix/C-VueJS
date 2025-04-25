@@ -1,12 +1,14 @@
-// Исправленный компонент DrawingCanvas.vue
 <template>
   <div class="drawing-canvas" ref="canvasContainer">
+    <!-- Подложка с изображением -->
     <canvas
       ref="imageCanvas"
       class="drawing-canvas__image"
       :width="canvasWidth"
       :height="canvasHeight"
     ></canvas>
+
+    <!-- Холст для рисования -->
     <canvas
       ref="drawCanvas"
       class="drawing-canvas__drawing"
@@ -20,6 +22,11 @@
       @touchmove="handleTouch($event, draw)"
       @touchend="stopDrawing"
     ></canvas>
+
+    <!-- Индикатор процесса автовоспроизведения -->
+    <div v-if="isReplaying" class="drawing-canvas__replay-indicator">
+      Воспроизведение...
+    </div>
   </div>
 </template>
 
@@ -42,7 +49,7 @@ import { Options, Vue } from "vue-class-component";
       default: true,
     },
   },
-  emits: ["drawing-updated"],
+  emits: ["drawing-updated", "replay-complete"],
 })
 export default class DrawingCanvas extends Vue {
   imageUrl!: string;
@@ -50,6 +57,7 @@ export default class DrawingCanvas extends Vue {
   thickness!: number;
   showImage!: boolean;
 
+  // Состояние рисования
   isDrawing = false;
   lastX = 0;
   lastY = 0;
@@ -57,14 +65,19 @@ export default class DrawingCanvas extends Vue {
   canvasHeight = 600;
   originalImage: HTMLImageElement | null = null;
   imageLoaded = false;
-  // Сохраняем историю рисования для анимации
+
+  // Состояние воспроизведения
+  isReplaying = false;
+
+  // Запись движений для автовоспроизведения
   drawingCommands: Array<{
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
+    x: number;
+    y: number;
+    dx: number;
+    dy: number;
     color: string;
     width: number;
+    lift?: boolean;
   }> = [];
 
   mounted() {
@@ -178,13 +191,36 @@ export default class DrawingCanvas extends Vue {
     this.drawContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
     // Перерисовываем все линии из истории рисования
+    let lastX = 0;
+    let lastY = 0;
+    let drawingStarted = false;
+
     for (const cmd of this.drawingCommands) {
+      if (cmd.lift) {
+        drawingStarted = false;
+        continue;
+      }
+
       this.drawContext.strokeStyle = cmd.color;
       this.drawContext.lineWidth = cmd.width;
+
+      if (!drawingStarted) {
+        // Начинаем новую линию
+        lastX = cmd.x;
+        lastY = cmd.y;
+        drawingStarted = true;
+        continue;
+      }
+
+      // Рисуем отрезок линии
       this.drawContext.beginPath();
-      this.drawContext.moveTo(cmd.x1, cmd.y1);
-      this.drawContext.lineTo(cmd.x2, cmd.y2);
+      this.drawContext.moveTo(lastX, lastY);
+      this.drawContext.lineTo(cmd.x, cmd.y);
       this.drawContext.stroke();
+
+      // Обновляем последние координаты
+      lastX = cmd.x;
+      lastY = cmd.y;
     }
   }
 
@@ -193,12 +229,26 @@ export default class DrawingCanvas extends Vue {
     const { offsetX, offsetY } = this.getCoordinates(event);
     this.lastX = offsetX;
     this.lastY = offsetY;
+
+    // Добавляем начальную точку линии
+    this.drawingCommands.push({
+      x: offsetX,
+      y: offsetY,
+      dx: 0,
+      dy: 0,
+      color: this.color,
+      width: this.thickness,
+    });
   }
 
   draw(event: MouseEvent) {
     if (!this.isDrawing) return;
 
     const { offsetX, offsetY } = this.getCoordinates(event);
+
+    // Вычисляем смещение
+    const dx = offsetX - this.lastX;
+    const dy = offsetY - this.lastY;
 
     // Обновляем контекст рисования с текущими параметрами
     this.drawContext.strokeStyle = this.color;
@@ -212,10 +262,10 @@ export default class DrawingCanvas extends Vue {
 
     // Добавляем команду в историю
     this.drawingCommands.push({
-      x1: this.lastX,
-      y1: this.lastY,
-      x2: offsetX,
-      y2: offsetY,
+      x: offsetX,
+      y: offsetY,
+      dx: dx,
+      dy: dy,
       color: this.color,
       width: this.thickness,
     });
@@ -229,6 +279,19 @@ export default class DrawingCanvas extends Vue {
   }
 
   stopDrawing() {
+    if (this.isDrawing) {
+      // Добавляем маркер поднятия пера
+      this.drawingCommands.push({
+        x: 0,
+        y: 0,
+        dx: 0,
+        dy: 0,
+        color: this.color,
+        width: this.thickness,
+        lift: true,
+      });
+    }
+
     this.isDrawing = false;
   }
 
@@ -309,29 +372,79 @@ export default class DrawingCanvas extends Vue {
     tempContext.fillStyle = "#ffffff";
     tempContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
+    // Копируем линии с холста рисования
+    tempContext.drawImage(this.$refs.drawCanvas as HTMLCanvasElement, 0, 0);
+
     // Возвращаем данные изображения в формате base64
-    return this.animateDrawing(tempCanvas, tempContext);
+    return tempCanvas.toDataURL("image/png");
   }
 
-  // Новый метод для анимации рисования линий
-  animateDrawing(
-    canvas: HTMLCanvasElement,
-    ctx: CanvasRenderingContext2D
-  ): string {
-    // Для демонстрации сразу нарисуем все линии
-    // (в реальном приложении здесь была бы анимация)
-    for (const cmd of this.drawingCommands) {
-      ctx.strokeStyle = cmd.color;
-      ctx.lineWidth = cmd.width;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.beginPath();
-      ctx.moveTo(cmd.x1, cmd.y1);
-      ctx.lineTo(cmd.x2, cmd.y2);
-      ctx.stroke();
-    }
+  // Метод для автоматического воспроизведения процесса рисования
+  replayDrawing(speed = 1) {
+    if (this.isReplaying || this.drawingCommands.length === 0) return;
 
-    return canvas.toDataURL("image/png");
+    // Очищаем холст рисования
+    this.drawContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+    this.isReplaying = true;
+
+    // Создаем копию команд для воспроизведения
+    const commands = [...this.drawingCommands];
+    let lastX = 0;
+    let lastY = 0;
+    let drawingStarted = false;
+
+    // Функция для отрисовки следующей команды
+    const drawNextCommand = () => {
+      if (commands.length === 0 || !this.isReplaying) {
+        this.isReplaying = false;
+        this.$emit("replay-complete");
+        return;
+      }
+
+      const cmd = commands.shift();
+      if (!cmd) return;
+
+      // Если это команда поднятия пера - начинаем новую линию
+      if (cmd.lift) {
+        drawingStarted = false;
+        setTimeout(drawNextCommand, 50 / speed);
+        return;
+      }
+
+      this.drawContext.strokeStyle = cmd.color;
+      this.drawContext.lineWidth = cmd.width;
+
+      if (!drawingStarted) {
+        // Начинаем новую линию
+        lastX = cmd.x;
+        lastY = cmd.y;
+        drawingStarted = true;
+        setTimeout(drawNextCommand, 50 / speed);
+        return;
+      }
+
+      // Рисуем отрезок линии
+      this.drawContext.beginPath();
+      this.drawContext.moveTo(lastX, lastY);
+      this.drawContext.lineTo(cmd.x, cmd.y);
+      this.drawContext.stroke();
+
+      // Обновляем последние координаты
+      lastX = cmd.x;
+      lastY = cmd.y;
+
+      // Планируем следующую команду
+      setTimeout(drawNextCommand, 10 / speed);
+    };
+
+    // Начинаем отрисовку
+    drawNextCommand();
+  }
+
+  // Метод для остановки воспроизведения
+  stopReplay() {
+    this.isReplaying = false;
   }
 }
 </script>
@@ -362,6 +475,31 @@ export default class DrawingCanvas extends Vue {
   &__drawing {
     z-index: 2;
     cursor: crosshair;
+  }
+
+  &__replay-indicator {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 3;
+    animation: pulse 1.5s infinite;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
   }
 }
 </style>
