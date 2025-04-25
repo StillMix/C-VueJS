@@ -13,5 +13,5 @@ import Header from "@/components/Header.vue";
     Header,
   },
 })
-export default class HomeView extends Vue {}
+export default class DrawView extends Vue {}
 </script>

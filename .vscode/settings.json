@@ -4,5 +4,6 @@
     "list": "cpp",
     "string": "cpp",
     "vector": "cpp"
-  }
+  },
+  "cmake.ignoreCMakeListsMissing": true
 }
