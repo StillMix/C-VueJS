@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QMimeDatabase>
 #include <QDebug>
+#include <QDir> 
 
 class DrawingsSchemeHandler : public QWebEngineUrlSchemeHandler {
     Q_OBJECT
