@@ -2,7 +2,6 @@
   <div class="header" :class="{ 'header--scrolled': isScrolled }">
     <div class="header__brand">
       <span class="header__logo">АП</span>
-      <span class="header__title">Мое приложение</span>
     </div>
 
     <div class="header__nav">
