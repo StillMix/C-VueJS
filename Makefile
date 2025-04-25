@@ -53,10 +53,12 @@ OBJECTS_DIR   = bin/dep/obj/
 ####### Files
 
 SOURCES       = cpp-server/src/main.cpp \
-		cpp-server/src/backend.cpp bin/dep/rcc/qrc_resources.cpp \
+		cpp-server/src/backend.cpp \
+		cpp-server/src/drawings_handler.cpp bin/dep/rcc/qrc_resources.cpp \
 		bin/dep/moc/moc_backend.cpp
 OBJECTS       = bin/dep/obj/main.o \
 		bin/dep/obj/backend.o \
+		bin/dep/obj/drawings_handler.o \
 		bin/dep/obj/qrc_resources.o \
 		bin/dep/obj/moc_backend.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
@@ -149,7 +151,8 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		project.pro cpp-server/src/backend.h cpp-server/src/main.cpp \
-		cpp-server/src/backend.cpp
+		cpp-server/src/backend.cpp \
+		cpp-server/src/drawings_handler.cpp
 QMAKE_TARGET  = VueQtApp
 DESTDIR       = bin/
 TARGET        = bin/VueQtApp
@@ -363,7 +366,7 @@ distdir: FORCE
 	$(COPY_FILE) --parents resources.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents cpp-server/src/backend.h $(DISTDIR)/
-	$(COPY_FILE) --parents cpp-server/src/main.cpp cpp-server/src/backend.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents cpp-server/src/main.cpp cpp-server/src/backend.cpp cpp-server/src/drawings_handler.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -439,6 +442,9 @@ bin/dep/obj/main.o: cpp-server/src/main.cpp cpp-server/src/backend.h \
 
 bin/dep/obj/backend.o: cpp-server/src/backend.cpp cpp-server/src/backend.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o bin/dep/obj/backend.o cpp-server/src/backend.cpp
+
+bin/dep/obj/drawings_handler.o: cpp-server/src/drawings_handler.cpp cpp-server/src/drawings_handler.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o bin/dep/obj/drawings_handler.o cpp-server/src/drawings_handler.cpp
 
 bin/dep/obj/qrc_resources.o: bin/dep/rcc/qrc_resources.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o bin/dep/obj/qrc_resources.o bin/dep/rcc/qrc_resources.cpp

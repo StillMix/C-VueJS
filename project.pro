@@ -17,7 +17,8 @@ UI_DIR = $$PWD/bin/dep/ui
 
 SOURCES += \
     cpp-server/src/main.cpp \
-    cpp-server/src/backend.cpp
+    cpp-server/src/backend.cpp \
+    cpp-server/src/drawings_handler.cpp
 
 HEADERS += \
     cpp-server/src/backend.h
