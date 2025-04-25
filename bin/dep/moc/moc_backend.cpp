@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_Backend_t {
-    QByteArrayData data[13];
-    char stringdata0[113];
+    QByteArrayData data[16];
+    char stringdata0[142];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -44,13 +44,17 @@ QT_MOC_LITERAL(8, 77, 4), // "data"
 QT_MOC_LITERAL(9, 82, 9), // "calculate"
 QT_MOC_LITERAL(10, 92, 1), // "a"
 QT_MOC_LITERAL(11, 94, 1), // "b"
-QT_MOC_LITERAL(12, 96, 16) // "getDrawingImages"
+QT_MOC_LITERAL(12, 96, 16), // "getDrawingImages"
+QT_MOC_LITERAL(13, 113, 9), // "saveImage"
+QT_MOC_LITERAL(14, 123, 9), // "imageData"
+QT_MOC_LITERAL(15, 133, 8) // "fileName"
 
     },
     "Backend\0dataChanged\0\0newData\0"
     "progressUpdated\0progress\0getMessage\0"
     "processData\0data\0calculate\0a\0b\0"
-    "getDrawingImages"
+    "getDrawingImages\0saveImage\0imageData\0"
+    "fileName"
 };
 #undef QT_MOC_LITERAL
 
@@ -60,7 +64,7 @@ static const uint qt_meta_data_Backend[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       6,   14, // methods
+       7,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -68,14 +72,15 @@ static const uint qt_meta_data_Backend[] = {
        2,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   44,    2, 0x06 /* Public */,
-       4,    1,   47,    2, 0x06 /* Public */,
+       1,    1,   49,    2, 0x06 /* Public */,
+       4,    1,   52,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       6,    0,   50,    2, 0x0a /* Public */,
-       7,    1,   51,    2, 0x0a /* Public */,
-       9,    2,   54,    2, 0x0a /* Public */,
-      12,    0,   59,    2, 0x0a /* Public */,
+       6,    0,   55,    2, 0x0a /* Public */,
+       7,    1,   56,    2, 0x0a /* Public */,
+       9,    2,   59,    2, 0x0a /* Public */,
+      12,    0,   64,    2, 0x0a /* Public */,
+      13,    2,   65,    2, 0x0a /* Public */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::QString,    3,
@@ -86,6 +91,7 @@ static const uint qt_meta_data_Backend[] = {
     QMetaType::Void, QMetaType::QString,    8,
     QMetaType::Int, QMetaType::Int, QMetaType::Int,   10,   11,
     QMetaType::QStringList,
+    QMetaType::Bool, QMetaType::QString, QMetaType::QString,   14,   15,
 
        0        // eod
 };
@@ -105,6 +111,8 @@ void Backend::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, voi
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = std::move(_r); }  break;
         case 5: { QStringList _r = _t->getDrawingImages();
             if (_a[0]) *reinterpret_cast< QStringList*>(_a[0]) = std::move(_r); }  break;
+        case 6: { bool _r = _t->saveImage((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -155,13 +163,13 @@ int Backend::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 7)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 7;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 6)
+        if (_id < 7)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 6;
+        _id -= 7;
     }
     return _id;
 }

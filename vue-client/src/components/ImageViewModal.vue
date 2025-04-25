@@ -40,11 +40,26 @@ import { Options, Vue } from "vue-class-component";
 export default class ImageViewModal extends Vue {
   image!: string;
 
+  // Изменение в методе get imageUrl() в компоненте ImageViewModal.vue
   get imageUrl(): string {
     try {
       // Проверяем, начинается ли изображение с "data:" (для загруженных изображений)
       if (this.image && this.image.startsWith("data:")) {
         return this.image;
+      }
+
+      // Проверяем, начинается ли имя файла с "userfoto-" (для изображений от пользователя)
+      if (this.image && this.image.startsWith("userfoto-")) {
+        // В режиме разработки проверяем localStorage
+        const savedImage = localStorage.getItem(`userImage_${this.image}`);
+        if (savedImage) {
+          return savedImage;
+        }
+
+        // Если изображение не найдено в localStorage, пытаемся загрузить из папки
+        if (window.backend) {
+          return `drawings/${this.image}`;
+        }
       }
 
       // Для обычных изображений из Assets

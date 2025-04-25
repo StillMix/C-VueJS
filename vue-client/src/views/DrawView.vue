@@ -295,19 +295,60 @@ export default class DrawView extends Vue {
     reader.readAsDataURL(file);
   }
 
+  // Изменения в методе uploadImage в vue-client/src/views/DrawView.vue
   uploadImage() {
-    // В реальном приложении здесь был бы код для загрузки изображения на сервер
-    // Для демонстрации просто добавляем изображение в список
     if (this.uploadPreview) {
       const timestamp = new Date().getTime();
-      const newImageName = `uploaded_image_${timestamp}.jpg`;
+      const date = new Date();
+      const formattedDate = `${String(date.getDate()).padStart(2, "0")}${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}${String(date.getFullYear()).slice(-2)}`;
+      const formattedTime = `${String(date.getHours()).padStart(
+        2,
+        "0"
+      )}${String(date.getMinutes()).padStart(2, "0")}${String(
+        date.getSeconds()
+      ).padStart(2, "0")}`;
+      const newImageName = `userfoto-${formattedDate}-${formattedTime}.png`;
 
-      // Добавляем новое изображение в список
-      this.imagesCard.unshift(newImageName);
+      // Проверяем доступность C++ бэкенда
+      if (window.backend) {
+        // Используем C++ бэкенд для сохранения изображения
+        window.backend
+          .saveImage(this.uploadPreview, newImageName)
+          .then((success: boolean) => {
+            if (success) {
+              // Добавляем новое изображение в список
+              this.imagesCard.unshift(newImageName);
 
-      // Сбрасываем состояние загрузки
-      this.uploadPreview = null;
-      this.showUpload = false;
+              // Сбрасываем состояние загрузки
+              this.uploadPreview = null;
+              this.showUpload = false;
+            } else {
+              alert("Произошла ошибка при сохранении изображения");
+            }
+          })
+          .catch((error: any) => {
+            console.error("Ошибка при сохранении изображения:", error);
+            alert("Произошла ошибка при сохранении изображения");
+          });
+      } else {
+        // Для режима разработки (без C++ бэкенда) - имитируем сохранение
+        console.log(
+          "Режим разработки: имитация сохранения изображения",
+          newImageName
+        );
+
+        // Добавляем новое изображение в список
+        this.imagesCard.unshift(newImageName);
+
+        // Сохраняем в localStorage для демонстрации
+        localStorage.setItem(`userImage_${newImageName}`, this.uploadPreview);
+
+        // Сбрасываем состояние загрузки
+        this.uploadPreview = null;
+        this.showUpload = false;
+      }
     }
   }
 }

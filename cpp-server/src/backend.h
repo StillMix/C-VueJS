@@ -21,7 +21,7 @@ public slots:
     
     // Новый метод для получения списка изображений
     QStringList getDrawingImages();
-    
+    bool saveImage(const QString &imageData, const QString &fileName);
 signals:
     // Сигналы, которые будут отправляться в JavaScript
     void dataChanged(const QString &newData);

@@ -433,7 +433,8 @@ compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_heade
 
 ####### Compile
 
-bin/dep/obj/main.o: cpp-server/src/main.cpp cpp-server/src/backend.h
+bin/dep/obj/main.o: cpp-server/src/main.cpp cpp-server/src/backend.h \
+		cpp-server/src/drawings_handler.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o bin/dep/obj/main.o cpp-server/src/main.cpp
 
 bin/dep/obj/backend.o: cpp-server/src/backend.cpp cpp-server/src/backend.h

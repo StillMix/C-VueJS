@@ -7,13 +7,16 @@
 #include <QDir>
 #include <QDebug>
 #include "backend.h"
-
+#include <QWebEngineProfile>
+#include "drawings_handler.h"
 
 int main(int argc, char *argv[]) {
     // Для работы с Qt WebEngine необходимы эти параметры
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-    
+    QWebEngineProfile::defaultProfile()->installUrlSchemeHandler(
+        "drawings", new DrawingsSchemeHandler()
+    );
     // Инициализация приложения Qt
     QApplication app(argc, argv);
     
