@@ -10,11 +10,21 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/draw",
     name: "draw",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/DrawView.vue"),
+      import(/* webpackChunkName: "draw" */ "../views/DrawView.vue"),
+  },
+  {
+    // Добавляем новый маршрут для Рисовать изображения
+    path: "/edit/:imageName",
+    name: "edit-image",
+    component: () =>
+      import(/* webpackChunkName: "edit" */ "../views/EditImageView.vue"),
+    props: true, // Передаем параметр как props
+  },
+  {
+    // Перехватываем некорректные URL с /draw/... и перенаправляем на /draw
+    path: "/draw/:pathMatch(.*)*",
+    redirect: { name: "draw" },
   },
 ];
 

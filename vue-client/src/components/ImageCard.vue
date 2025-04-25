@@ -6,16 +6,19 @@
         :alt="imageCaption"
         class="image-card__img"
         loading="lazy"
-        @click="$emit('click', image, index)"
+        @click.prevent="$emit('click', image, index)"
       />
 
       <div class="image-card__overlay">
-        <button class="image-card__btn image-card__btn--edit">
-          <DrawingImg :width="20" :height="20" /> Редактировать
+        <button
+          class="image-card__btn image-card__btn--edit"
+          @click.prevent="$emit('click', image, index)"
+        >
+          <DrawingImg :width="20" :height="20" /> Рисовать
         </button>
         <button
           class="image-card__btn image-card__btn--favorite"
-          @click.stop="$emit('toggle-favorite', image)"
+          @click.stop.prevent="$emit('toggle-favorite', image)"
         >
           <span v-if="isFavorite">★</span>
           <span v-else>☆</span>
@@ -50,14 +53,25 @@ export default class ImageCard extends Vue {
 
   get imageUrl(): string {
     try {
+      // Проверяем, начинается ли изображение с "data:" (для загруженных изображений)
+      if (this.image && this.image.startsWith("data:")) {
+        return this.image;
+      }
+
+      // Для обычных изображений из Assets
       return require(`@/assets/Drawings/${this.image}`);
     } catch (e) {
-      console.error(e);
+      console.error("Ошибка при загрузке изображения:", e);
       return "";
     }
   }
 
   get imageCaption(): string {
+    // Проверяем, начинается ли изображение с "data:" (для загруженных изображений)
+    if (this.image && this.image.startsWith("data:")) {
+      return "Загруженное изображение";
+    }
+
     // Убираем расширение файла и заменяем подчеркивания на пробелы
     return this.image.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
   }

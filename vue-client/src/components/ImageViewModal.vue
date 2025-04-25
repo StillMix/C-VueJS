@@ -8,15 +8,18 @@
         </div>
         <div class="image-modal__controls">
           <button class="image-modal__btn" @click="$emit('edit')">
-            Редактировать
+            <span class="image-modal__btn-icon">✏️</span>
+            Рисовать
           </button>
           <button class="image-modal__btn" @click="$emit('download')">
+            <span class="image-modal__btn-icon">⬇️</span>
             Скачать
           </button>
           <button
             class="image-modal__btn image-modal__btn--delete"
             @click="$emit('delete')"
           >
+            <span class="image-modal__btn-icon">🗑️</span>
             Удалить
           </button>
         </div>
@@ -39,14 +42,25 @@ export default class ImageViewModal extends Vue {
 
   get imageUrl(): string {
     try {
+      // Проверяем, начинается ли изображение с "data:" (для загруженных изображений)
+      if (this.image && this.image.startsWith("data:")) {
+        return this.image;
+      }
+
+      // Для обычных изображений из Assets
       return require(`@/assets/Drawings/${this.image}`);
     } catch (e) {
-      console.error(e);
+      console.error("Ошибка при загрузке изображения:", e);
       return "";
     }
   }
 
   get imageCaption(): string {
+    // Проверяем, начинается ли изображение с "data:" (для загруженных изображений)
+    if (this.image && this.image.startsWith("data:")) {
+      return "Загруженное изображение";
+    }
+
     // Убираем расширение файла и заменяем подчеркивания на пробелы
     return this.image.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
   }
@@ -98,6 +112,7 @@ export default class ImageViewModal extends Vue {
 
     &:hover {
       background-color: rgba(0, 0, 0, 0.8);
+      transform: scale(1.1);
     }
   }
 
@@ -108,6 +123,7 @@ export default class ImageViewModal extends Vue {
     align-items: center;
     justify-content: center;
     background-color: #000;
+    min-height: 400px;
   }
 
   &__image {
@@ -122,6 +138,7 @@ export default class ImageViewModal extends Vue {
     gap: 15px;
     padding: 15px;
     background-color: #f5f5f5;
+    flex-wrap: wrap;
   }
 
   &__btn {
@@ -132,9 +149,17 @@ export default class ImageViewModal extends Vue {
     font-size: 16px;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 
     &:hover {
       background-color: var(--primary-dark, #a74040);
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: translateY(0);
     }
 
     &--delete {
@@ -144,6 +169,10 @@ export default class ImageViewModal extends Vue {
         background-color: #d32f2f;
       }
     }
+  }
+
+  &__btn-icon {
+    font-size: 18px;
   }
 }
 
@@ -162,5 +191,19 @@ export default class ImageViewModal extends Vue {
 .modal-leave-to .image-modal__content {
   transform: scale(0.9);
   transition: transform 0.3s ease;
+}
+
+// Адаптивный дизайн
+@media (max-width: 768px) {
+  .image-modal {
+    &__controls {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    &__btn {
+      width: 80%;
+    }
+  }
 }
 </style>

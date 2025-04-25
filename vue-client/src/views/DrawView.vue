@@ -24,6 +24,7 @@
 
     <!-- Использование компонента ImageViewModal -->
     <ImageViewModal
+      v-if="selectedImage"
       :image="selectedImage"
       @close="closeImageDetail"
       @edit="editImage"
@@ -123,6 +124,11 @@ export default class DrawView extends Vue {
   }
 
   openImageDetail(image: string, index: number) {
+    // Предотвращаем переход по ссылке
+    if (event) {
+      event.preventDefault();
+    }
+
     this.selectedImage = image;
     this.selectedIndex = index;
     document.body.classList.add("modal-open");
@@ -138,25 +144,59 @@ export default class DrawView extends Vue {
   }
 
   deleteImage() {
-    // В реальном приложении здесь был бы код для удаления изображения
-    alert("В реальном приложении здесь произошло бы удаление изображения");
-    this.showDeleteConfirm = false;
-    this.closeImageDetail();
+    if (this.selectedImage) {
+      // Удаляем изображение из списка
+      this.imagesCard = this.imagesCard.filter(
+        (img) => img !== this.selectedImage
+      );
+
+      // Удаляем из избранного, если было добавлено
+      if (this.favorites.includes(this.selectedImage)) {
+        this.favorites = this.favorites.filter(
+          (img) => img !== this.selectedImage
+        );
+        localStorage.setItem("favorites", JSON.stringify(this.favorites));
+      }
+
+      // Закрываем модальные окна
+      this.showDeleteConfirm = false;
+      this.closeImageDetail();
+    }
   }
 
   editImage() {
-    // Переход к редактированию изображения
-    alert("Переход к редактированию изображения");
-    this.closeImageDetail();
+    if (this.selectedImage) {
+      // Здесь будет логика для рисования изображения
+      // Например, переход на маршрут рисования
+      this.$router
+        .push({
+          name: "edit-image",
+          params: { imageName: this.selectedImage },
+        })
+        .catch(() => {
+          // Если маршрут еще не создан, просто показываем предупреждение
+          alert("Функция рисования будет доступна в ближайшем обновлении");
+        });
+
+      // Закрываем модальное окно
+      this.closeImageDetail();
+    }
   }
 
   downloadImage() {
-    // Имитация скачивания изображения
+    // Скачивание изображения
     if (this.selectedImage) {
-      const link = document.createElement("a");
-      link.href = this.getImageUrl(this.selectedImage);
-      link.download = this.selectedImage;
-      link.click();
+      try {
+        const link = document.createElement("a");
+        link.href = this.getImageUrl(this.selectedImage);
+        link.download = this.selectedImage;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error("Ошибка при скачивании изображения:", error);
+        alert("Не удалось скачать изображение");
+      }
     }
   }
 
@@ -205,9 +245,21 @@ export default class DrawView extends Vue {
   }
 
   uploadImage() {
-    // В реальном приложении здесь был бы код для загрузки изображения
-    alert("В реальном приложении здесь произошла бы загрузка изображения");
-    this.showUpload = false;
+    // В реальном приложении здесь был бы код для загрузки изображения на сервер
+    // Для демонстрации просто добавляем изображение в список
+    if (this.uploadPreview) {
+      const timestamp = new Date().getTime();
+      const newImageName = `uploaded_image_${timestamp}.jpg`;
+
+      // Добавляем новое изображение в список
+      this.imagesCard.unshift(newImageName);
+
+      // Сбрасываем состояние загрузки
+      this.uploadPreview = null;
+      this.showUpload = false;
+
+      alert("Изображение успешно загружено!");
+    }
   }
 }
 </script>
