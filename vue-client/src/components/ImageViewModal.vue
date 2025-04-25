@@ -50,15 +50,22 @@ export default class ImageViewModal extends Vue {
 
       // Проверяем, начинается ли имя файла с "userfoto-" (для изображений от пользователя)
       if (this.image && this.image.startsWith("userfoto-")) {
-        // В режиме разработки проверяем localStorage
-        const savedImage = localStorage.getItem(`userImage_${this.image}`);
-        if (savedImage) {
-          return savedImage;
-        }
-
-        // Если изображение не найдено в localStorage, пытаемся загрузить из папки
+        // Если изображение не найдено в localStorage, формируем путь для Qt
         if (window.backend) {
-          return `drawings/${this.image}`;
+          // const drawingsContext = require.context(
+          //   "@/assets/drawings", // Путь до папки
+          //   false, // Не рекурсивно
+          //   // Нет фильтра по расширению, чтобы получить все файлы
+          //   /.*/ // Подходит для всех файлов
+          // );
+
+          // const drawingFiles = drawingsContext
+          //   .keys()
+          //   .map((key) => key.replace("./", "")); // Убираем './' в начале путей
+
+          // alert(JSON.stringify(drawingFiles)); // Выводим список файлов
+
+          return `./img/${this.image}`;
         }
       }
 
