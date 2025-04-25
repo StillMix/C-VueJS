@@ -88,28 +88,29 @@ bool Backend::saveImage(const QString &imageData, const QString &fileName) {
     // Конвертируем base64 в бинарные данные
     QByteArray imageBytes = QByteArray::fromBase64(base64Data.toUtf8());
     
+    // Загружаем изображение
+    QImage image;
+    if (!image.loadFromData(imageBytes)) {
+        qWarning() << "Не удалось загрузить изображение из данных";
+        return false;
+    }
+    
     // Создаем имя файла с текущей датой и временем
     QDateTime now = QDateTime::currentDateTime();
     QString dateTime = now.toString("ddMMyy-HHmmss");
     
-    // Определяем расширение из типа данных
-    QString extension;
-    if (dataType == "image/png") {
-        extension = ".png";
-    } else if (dataType == "image/jpeg") {
-        extension = ".jpg";
-    } else if (dataType == "image/gif") {
-        extension = ".gif";
-    } else {
-        extension = ".png"; // По умолчанию
-    }
-    
-    // Составляем полное имя файла
+    // Составляем имя файла с расширением jpg
     QString saveFileName;
     if (fileName.isEmpty()) {
-        saveFileName = QString("userfoto-%1%2").arg(dateTime).arg(extension);
+        saveFileName = QString("userfoto-%1.jpg").arg(dateTime);
     } else {
+        // Если имя файла уже предоставлено, заменяем расширение на .jpg
         saveFileName = fileName;
+        if (saveFileName.contains(".")) {
+            saveFileName = saveFileName.left(saveFileName.lastIndexOf(".")) + ".jpg";
+        } else {
+            saveFileName += ".jpg";
+        }
     }
     
     // Путь к директории для сохранения
@@ -121,16 +122,12 @@ bool Backend::saveImage(const QString &imageData, const QString &fileName) {
         dir.mkpath(".");
     }
     
-    // Сохраняем изображение
-    QFile file(savePath);
-    if (!file.open(QIODevice::WriteOnly)) {
-        qWarning() << "Не удалось открыть файл для записи:" << savePath;
+    // Сохраняем изображение в формате JPG
+    if (!image.save(savePath, "JPG", 90)) {  // 90 - качество сжатия (от 0 до 100)
+        qWarning() << "Не удалось сохранить изображение:" << savePath;
         return false;
     }
     
-    file.write(imageBytes);
-    file.close();
-    
-    qDebug() << "Изображение успешно сохранено:" << savePath;
+    qDebug() << "Изображение успешно сохранено в JPG формате:" << savePath;
     return true;
 }
