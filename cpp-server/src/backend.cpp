@@ -43,37 +43,6 @@ int Backend::calculate(int a, int b) {
     return a + b;
 }
 
-QStringList Backend::getDrawingImages() {
-    qDebug() << "JavaScript запросил список изображений";
-    
-    QStringList images;
-    
-    // Путь к директории с изображениями
-    QString path = "./drawings";
-    
-    QDir directory(path);
-    if (!directory.exists()) {
-        qWarning() << "Директория" << path << "не существует!";
-        // Создаем директорию, если она не существует
-        directory.mkpath(".");
-    }
-    
-    // Фильтр для поиска только изображений
-    QStringList filters;
-    filters << "*.jpg" << "*.jpeg" << "*.png" << "*.gif" << "*.bmp";
-    directory.setNameFilters(filters);
-    
-    // Получаем список файлов, соответствующих фильтру
-    QFileInfoList fileList = directory.entryInfoList();
-    
-    // Проходим по списку файлов и добавляем их имена в результат
-    for (const QFileInfo &fileInfo : fileList) {
-        images.append(fileInfo.fileName());
-    }
-    
-    qDebug() << "Найдено" << images.size() << "изображений";
-    return images;
-}
 
 // в backend.cpp добавляем вывод подробной отладочной информации в метод saveImage
 
@@ -107,11 +76,11 @@ bool Backend::saveImage(const QString &imageData, const QString &fileName) {
     QString saveFileName = fileName;
     
     // Путь к директории для сохранения
-    QString savePath = "./drawings/" + saveFileName;
+    QString savePath = "./frontend/dist/img/" + saveFileName;
     qDebug() << "Путь для сохранения:" << savePath;
     
     // Проверяем наличие директории
-    QDir dir("./drawings");
+    QDir dir("./frontend/dist/img");
     if (!dir.exists()) {
         qDebug() << "Создаем директорию drawings";
         if (!dir.mkpath(".")) {
@@ -148,7 +117,7 @@ QStringList Backend::getDrawingImages() {
     QStringList images;
     
     // Путь к директории с изображениями
-    QString path = "./drawings";
+    QString path = "./frontend/dist/img";
     qDebug() << "Ищем изображения в директории:" << path;
     
     QDir directory(path);

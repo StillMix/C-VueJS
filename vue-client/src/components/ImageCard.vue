@@ -51,8 +51,6 @@ export default class ImageCard extends Vue {
   index!: number;
   isFavorite!: boolean;
 
-  // Изменение в методе get imageUrl() в компоненте ImageCard.vue
-  // Метод imageUrl в компоненте ImageCard.vue
   get imageUrl(): string {
     try {
       // Проверяем, начинается ли изображение с "data:" (для загруженных изображений)

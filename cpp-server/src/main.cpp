@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     qDebug() << "Новая текущая директория:" << QDir::currentPath();
     
     // Проверка существования директории для рисунков
-    QDir drawingsDir("./drawings");
+    QDir drawingsDir("./frontend/dist/img");
     if (!drawingsDir.exists()) {
         qDebug() << "Директория drawings не существует, создаём...";
         if (drawingsDir.mkpath(".")) {
