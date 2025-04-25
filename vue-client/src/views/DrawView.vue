@@ -105,45 +105,101 @@ export default class DrawView extends Vue {
 
     // Добавляем обработчик клавиш для навигации в модальном окне
     window.addEventListener("keydown", this.handleKeyPress);
+
+    // Загружаем изображения
+    this.initQtConnection();
+  }
+  initQtConnection() {
+    if (!window.QWebChannel || !window.qt || !window.qt.webChannelTransport) {
+      console.error("QWebChannel или WebChannelTransport не доступны");
+      return;
+    }
+
+    new window.QWebChannel(window.qt.webChannelTransport, (channel: any) => {
+      this.backend = channel.objects.backend;
+      window.backend = this.backend;
+
+      // Подписываемся на сигнал обновления изображений
+      this.backend.imagesChanged.connect(() => {
+        console.log("Получен сигнал об изменении изображений");
+        this.loadImagesFromBackend();
+      });
+
+      // Загружаем начальный список изображений
+      this.loadImagesFromBackend();
+    });
+  }
+  loadImagesFromBackend() {
+    // Проверяем, доступен ли бэкенд
     if (
+      typeof window !== "undefined" &&
+      typeof window.backend !== "undefined"
+    ) {
+      console.log("Используем существующий бэкенд");
+      window.backend
+        .getDrawingImages()
+        .then((images: any) => {
+          console.log("Получены изображения:", images);
+          if (Array.isArray(images)) {
+            this.imagesCard = images;
+          }
+        })
+        .catch((error: any) => {
+          console.error("Ошибка при получении изображений:", error);
+        });
+    } else if (
       typeof window !== "undefined" &&
       typeof window.qt !== "undefined" &&
       typeof window.QWebChannel !== "undefined" &&
       typeof window.qt.webChannelTransport !== "undefined"
     ) {
-      this.loadImagesFromCpp();
-    }
-  }
-  loadImagesFromCpp(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      if (
-        typeof window !== "undefined" &&
-        typeof window.qt !== "undefined" &&
-        typeof window.qt.webChannelTransport !== "undefined" &&
-        typeof window.QWebChannel !== "undefined"
-      ) {
-        new window.QWebChannel(
-          window.qt.webChannelTransport,
-          (channel: any) => {
-            this.backend = channel.objects.backend;
-            this.backend
-              .getDrawingImages()
-              .then((images: any) => {
-                if (Array.isArray(images)) {
-                  this.imagesCard = images;
-                } else {
-                  console.error(
-                    "Полученные данные не являются массивом:",
-                    images
-                  );
-                }
-                resolve();
-              })
-              .catch(reject);
+      console.log("Инициализация веб-канала для загрузки изображений");
+      // Инициализируем WebChannel, если он еще не создан
+      new window.QWebChannel(window.qt.webChannelTransport, (channel: any) => {
+        this.backend = channel.objects.backend;
+        window.backend = this.backend; // Сохраняем глобально для повторного использования
+
+        this.backend
+          .getDrawingImages()
+          .then((images: any) => {
+            console.log("Получены изображения через новый канал:", images);
+            if (Array.isArray(images)) {
+              this.imagesCard = images;
+            }
+          })
+          .catch((error: any) => {
+            console.error("Ошибка при получении изображений:", error);
+          });
+      });
+    } else {
+      console.log("Режим разработки: загрузка тестовых изображений");
+      // В режиме разработки используем предопределенный список
+      this.imagesCard = [
+        "sketch.jpg",
+        "sketch2.jpg",
+        "sketch3.jpg",
+        "sketch4.jpg",
+        "sketch5.jpg",
+        "sketch6.jpg",
+        "sketch7.jpg",
+        "sketch8.jpg",
+        "sketch9.jpg",
+        "sketch10.jpg",
+        "sketch11.jpg",
+        "sketch12.jpg",
+      ];
+
+      // Проверяем наличие пользовательских изображений в localStorage
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("userImage_")) {
+          const imageName = key.replace("userImage_", "");
+          if (!this.imagesCard.includes(imageName)) {
+            this.imagesCard.unshift(imageName);
           }
-        );
+        }
       }
-    });
+    }
   }
 
   beforeUnmount() {
@@ -316,7 +372,7 @@ export default class DrawView extends Vue {
         // Используем C++ бэкенд для сохранения изображения
         window.backend
           .saveImage(this.uploadPreview, newImageName)
-          .then((success: boolean) => {
+          .then((success: any) => {
             if (success) {
               // Добавляем новое изображение в список
               this.imagesCard.unshift(newImageName);
@@ -324,6 +380,15 @@ export default class DrawView extends Vue {
               // Сбрасываем состояние загрузки
               this.uploadPreview = null;
               this.showUpload = false;
+
+              // Обновляем список изображений с сервера для синхронизации
+              if (window.backend) {
+                window.backend.getDrawingImages().then((images: any) => {
+                  if (Array.isArray(images)) {
+                    this.imagesCard = images;
+                  }
+                });
+              }
             } else {
               alert("Произошла ошибка при сохранении изображения");
             }

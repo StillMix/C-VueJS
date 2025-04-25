@@ -19,6 +19,9 @@ QString Backend::getMessage() {
     return m_message;
 }
 
+void Backend::notifyImagesChanged() {
+    emit imagesChanged();
+}
 void Backend::processData(const QString &data) {
     qDebug() << "Получены данные от JavaScript:" << data;
     
@@ -72,8 +75,10 @@ QStringList Backend::getDrawingImages() {
     return images;
 }
 
+// в backend.cpp добавляем вывод подробной отладочной информации в метод saveImage
+
 bool Backend::saveImage(const QString &imageData, const QString &fileName) {
-    qDebug() << "Получен запрос на сохранение изображения";
+    qDebug() << "Получен запрос на сохранение изображения с именем:" << fileName;
     
     // Проверяем, что изображение в формате Data URL (base64)
     if (!imageData.startsWith("data:image/")) {
@@ -84,9 +89,11 @@ bool Backend::saveImage(const QString &imageData, const QString &fileName) {
     // Извлекаем тип изображения и данные base64
     QString dataType = imageData.mid(5, imageData.indexOf(";") - 5);
     QString base64Data = imageData.mid(imageData.indexOf(",") + 1);
+    qDebug() << "Тип данных изображения:" << dataType;
     
     // Конвертируем base64 в бинарные данные
     QByteArray imageBytes = QByteArray::fromBase64(base64Data.toUtf8());
+    qDebug() << "Размер полученных данных:" << imageBytes.size() << "байт";
     
     // Загружаем изображение
     QImage image;
@@ -94,40 +101,84 @@ bool Backend::saveImage(const QString &imageData, const QString &fileName) {
         qWarning() << "Не удалось загрузить изображение из данных";
         return false;
     }
+    qDebug() << "Изображение успешно загружено, размер:" << image.width() << "x" << image.height();
     
-    // Создаем имя файла с текущей датой и временем
-    QDateTime now = QDateTime::currentDateTime();
-    QString dateTime = now.toString("ddMMyy-HHmmss");
-    
-    // Составляем имя файла с расширением jpg
-    QString saveFileName;
-    if (fileName.isEmpty()) {
-        saveFileName = QString("userfoto-%1.jpg").arg(dateTime);
-    } else {
-        // Если имя файла уже предоставлено, заменяем расширение на .jpg
-        saveFileName = fileName;
-        if (saveFileName.contains(".")) {
-            saveFileName = saveFileName.left(saveFileName.lastIndexOf(".")) + ".jpg";
-        } else {
-            saveFileName += ".jpg";
-        }
-    }
+    // Составляем имя файла
+    QString saveFileName = fileName;
     
     // Путь к директории для сохранения
     QString savePath = "./drawings/" + saveFileName;
+    qDebug() << "Путь для сохранения:" << savePath;
     
     // Проверяем наличие директории
     QDir dir("./drawings");
     if (!dir.exists()) {
-        dir.mkpath(".");
+        qDebug() << "Создаем директорию drawings";
+        if (!dir.mkpath(".")) {
+            qWarning() << "Не удалось создать директорию drawings";
+            return false;
+        }
     }
     
-    // Сохраняем изображение в формате JPG
-    if (!image.save(savePath, "JPG", 90)) {  // 90 - качество сжатия (от 0 до 100)
+    // Сохраняем изображение в формате JPG с высоким качеством
+    if (!image.save(savePath, "JPG", 95)) {
         qWarning() << "Не удалось сохранить изображение:" << savePath;
         return false;
     }
     
-    qDebug() << "Изображение успешно сохранено в JPG формате:" << savePath;
+    qDebug() << "Изображение успешно сохранено:" << savePath;
+    
+    // Проверяем, действительно ли файл был создан
+    QFileInfo checkFile(savePath);
+    if (checkFile.exists() && checkFile.isFile()) {
+        qDebug() << "Файл существует, размер:" << checkFile.size() << "байт";
+    } else {
+        qWarning() << "Файл не был создан!";
+        return false;
+    }
+    emit imagesChanged();
     return true;
+}
+
+// Также улучшим метод получения списка изображений
+
+QStringList Backend::getDrawingImages() {
+    qDebug() << "JavaScript запросил список изображений";
+    
+    QStringList images;
+    
+    // Путь к директории с изображениями
+    QString path = "./drawings";
+    qDebug() << "Ищем изображения в директории:" << path;
+    
+    QDir directory(path);
+    if (!directory.exists()) {
+        qWarning() << "Директория" << path << "не существует!";
+        qDebug() << "Текущая директория:" << QDir::currentPath();
+        
+        // Создаем директорию, если она не существует
+        if (directory.mkpath(".")) {
+            qDebug() << "Директория drawings успешно создана";
+        } else {
+            qWarning() << "Не удалось создать директорию drawings!";
+        }
+    }
+    
+    // Фильтр для поиска только изображений
+    QStringList filters;
+    filters << "*.jpg" << "*.jpeg" << "*.png" << "*.gif" << "*.bmp";
+    directory.setNameFilters(filters);
+    
+    // Получаем список файлов, соответствующих фильтру
+    QFileInfoList fileList = directory.entryInfoList();
+    qDebug() << "Найдено файлов:" << fileList.size();
+    
+    // Проходим по списку файлов и добавляем их имена в результат
+    for (const QFileInfo &fileInfo : fileList) {
+        qDebug() << "Добавляем файл:" << fileInfo.fileName();
+        images.append(fileInfo.fileName());
+    }
+    
+    qDebug() << "Всего отправляем" << images.size() << "изображений";
+    return images;
 }

@@ -52,6 +52,7 @@ export default class ImageCard extends Vue {
   isFavorite!: boolean;
 
   // Изменение в методе get imageUrl() в компоненте ImageCard.vue
+  // Метод imageUrl в компоненте ImageCard.vue
   get imageUrl(): string {
     try {
       // Проверяем, начинается ли изображение с "data:" (для загруженных изображений)
@@ -64,20 +65,26 @@ export default class ImageCard extends Vue {
         // В режиме разработки проверяем localStorage
         const savedImage = localStorage.getItem(`userImage_${this.image}`);
         if (savedImage) {
+          console.log("Найдено изображение в localStorage:", this.image);
           return savedImage;
         }
 
-        // Если изображение не найдено в localStorage, пытаемся загрузить из папки
-        // C++ серверу нужно будет вернуть URL для этого изображения
+        // Если изображение не найдено в localStorage, формируем путь для Qt
         if (window.backend) {
+          console.log("Используем путь drawings для Qt:", this.image);
           return `drawings/${this.image}`;
         }
       }
 
       // Для обычных изображений из Assets
+      console.log("Загружаем из assets:", this.image);
       return require(`@/assets/Drawings/${this.image}`);
     } catch (e) {
-      console.error("Ошибка при загрузке изображения:", e);
+      console.error("Ошибка при загрузке изображения:", e, this.image);
+      // Если не удалось загрузить, проверяем, есть ли путь drawings
+      if (this.image && window.backend) {
+        return `drawings/${this.image}`;
+      }
       return "";
     }
   }
