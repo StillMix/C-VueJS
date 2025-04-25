@@ -297,6 +297,7 @@ export default class DrawingCanvas extends Vue {
 <style scoped lang="scss">
 .drawing-canvas {
   position: relative;
+  height: 100%;
   width: 100%;
   margin: 0 auto;
   border-radius: 8px;
@@ -305,6 +306,7 @@ export default class DrawingCanvas extends Vue {
 
   &__image,
   &__drawing {
+    object-fit: contain;
     position: absolute;
     top: 0;
     left: 0;

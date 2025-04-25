@@ -166,15 +166,14 @@ export default class DrawView extends Vue {
 
   editImage() {
     if (this.selectedImage) {
-      // Здесь будет логика для рисования изображения
-      // Например, переход на маршрут рисования
+      // Переход на маршрут по его имени и параметрам
       this.$router
         .push({
-          name: "edit-image",
-          params: { imageName: this.selectedImage },
+          name: "edit", // Исправлено на "edit" вместо "edit-image"
+          params: { image: this.selectedImage }, // Исправлено на "image" вместо "imageName"
         })
-        .catch(() => {
-          // Если маршрут еще не создан, просто показываем предупреждение
+        .catch((err) => {
+          console.error("Ошибка перехода:", err);
           alert("Функция рисования будет доступна в ближайшем обновлении");
         });
 

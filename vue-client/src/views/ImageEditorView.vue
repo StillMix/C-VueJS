@@ -254,7 +254,8 @@ export default class ImageEditorView extends Vue {
 
   &__canvas-container {
     margin: 20px 0;
-    max-width: 800px;
+    height: 800px;
+    width: 800px;
     margin-left: auto;
     margin-right: auto;
   }

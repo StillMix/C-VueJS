@@ -16,7 +16,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: "/edit/:image",
-    name: "edit",
+    name: "edit", // Здесь имя маршрута "edit", а не "edit-image"
     component: () =>
       import(/* webpackChunkName: "editor" */ "../views/ImageEditorView.vue"),
     props: true,
