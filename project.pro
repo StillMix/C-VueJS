@@ -27,8 +27,6 @@ HEADERS += \
 RESOURCES += \
     resources.qrc
 
-# Правила для копирования файлов Vue.js и drawings
-# Изменено - убрано копирование папки drawings
 win32 {
     QMAKE_POST_LINK += mkdir -p $$shell_path($$DESTDIR/frontend/dist) && \
                       xcopy /E /I /Y $$shell_path($$PWD/vue-client/dist) $$shell_path($$DESTDIR/frontend/dist)
