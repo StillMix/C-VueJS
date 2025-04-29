@@ -68,35 +68,87 @@ export default class HomeView extends Vue {
   // Метод mounted для более надежной инициализации
 
   mounted() {
+    // Устанавливаем таймаут для отображения статуса инициализации
+    this.errr = "Начало инициализации...";
+    console.log("Начало инициализации HomeView");
+
     // Индикатор загрузки
     this.loading = true;
 
     // Проверяем, доступен ли бэкенд сразу
     if (window.backend) {
       this.errr = "Бэкенд доступен сразу, загружаем изображения";
+      console.log("Бэкенд доступен сразу");
       this.loadAlbumImages();
 
       // Подписываемся на сигнал обновления альбома
-      window.backend.albumImagesChanged.connect(() => {
-        this.errr = "Получен сигнал об изменении изображений альбома";
-        this.loadAlbumImages();
-      });
+      try {
+        window.backend.albumImagesChanged.connect(() => {
+          this.errr = "Получен сигнал об изменении изображений альбома";
+          this.loadAlbumImages();
+        });
+        this.errr = "Подписка на сигнал выполнена (прямая инициализация)";
+      } catch (error) {
+        this.errr = `Ошибка при подписке на сигнал: ${error}`;
+        console.error("Ошибка при подписке на сигнал:", error);
+      }
     } else {
+      this.errr = "Бэкенд недоступен сразу, ожидаем инициализацию";
       console.log("Бэкенд недоступен, ожидаем инициализацию");
+
+      // Устанавливаем таймаут для инициализации, чтобы не зависнуть навсегда
+      const initializationTimeout = setTimeout(() => {
+        if (this.loading) {
+          this.errr =
+            "Превышено время ожидания инициализации, переходим в режим разработки";
+          console.warn("Превышено время ожидания инициализации");
+          this.useDevMode();
+        }
+      }, 5000); // 5 секунд на инициализацию
 
       // Проверяем наличие WebChannel
       if (window.QWebChannel && window.qt && window.qt.webChannelTransport) {
         this.errr = "WebChannel обнаружен, инициализируем соединение";
+        console.log("WebChannel обнаружен, инициализируем соединение");
         this.initQtConnection();
+
+        // Очищаем таймаут, если инициализация началась
+        clearTimeout(initializationTimeout);
       } else {
-        this.errr = "WebChannel не обнаружен, используем режим разработки";
-        // Для режима разработки загружаем из localStorage
-        this.useDevMode();
+        this.errr =
+          "WebChannel не обнаружен, пробуем повторную инициализацию через 1 секунду";
+        console.log("WebChannel не обнаружен, пробуем повторную инициализацию");
+
+        // Пробуем еще раз через 1 секунду
+        setTimeout(() => {
+          this.errr = "Повторная проверка наличия WebChannel";
+          console.log("Повторная проверка наличия WebChannel");
+
+          if (
+            window.QWebChannel &&
+            window.qt &&
+            window.qt.webChannelTransport
+          ) {
+            this.errr = "WebChannel обнаружен при повторной проверке";
+            console.log("WebChannel обнаружен при повторной проверке");
+            clearTimeout(initializationTimeout);
+            this.initQtConnection();
+          } else {
+            this.errr =
+              "WebChannel не обнаружен при повторной проверке, переходим в режим разработки";
+            console.log("WebChannel не обнаружен при повторной проверке");
+            clearTimeout(initializationTimeout);
+            this.useDevMode();
+          }
+        }, 1000);
 
         // Добавляем слушатель события, который выполнится, когда окно загрузится полностью
         window.addEventListener("load", () => {
           this.errr = "Окно полностью загружено, повторная проверка бэкенда";
+          console.log("Окно полностью загружено, повторная проверка бэкенда");
+
           if (window.backend) {
+            clearTimeout(initializationTimeout);
             this.loadAlbumImages();
           }
         });
@@ -104,29 +156,80 @@ export default class HomeView extends Vue {
     }
   }
 
-  // Новый метод для инициализации Qt соединения
+  // Улучшенный метод для инициализации Qt соединения
   initQtConnection() {
-    new window.QWebChannel(
-      window.qt && window.qt.webChannelTransport,
-      (channel: any) => {
-        window.backend = channel.objects.backend;
-        console.log("WebChannel инициализирован, бэкенд доступен");
+    this.errr = "Начинаем инициализацию WebChannel...";
 
-        // Загружаем изображения после инициализации канала
-        this.loadAlbumImages();
-
-        // Подписываемся на сигнал
-        window.backend.albumImagesChanged.connect(() => {
-          console.log("Получен сигнал об изменении изображений альбома");
-          this.loadAlbumImages();
-        });
+    try {
+      if (!window.qt || !window.qt.webChannelTransport) {
+        this.errr = "Ошибка: webChannelTransport недоступен!";
+        console.error("webChannelTransport недоступен!");
+        this.useDevMode();
+        return;
       }
-    );
+
+      this.errr = "Создаем новый QWebChannel...";
+      new window.QWebChannel(
+        window.qt.webChannelTransport,
+        (channel: any) => {
+          this.errr = "WebChannel создан, получаем объект backend...";
+
+          if (!channel || !channel.objects || !channel.objects.backend) {
+            this.errr = "Ошибка: объект backend не найден в канале!";
+            console.error("Объект backend не найден в канале!");
+            this.useDevMode();
+            return;
+          }
+
+          window.backend = channel.objects.backend;
+          this.errr = "Бэкенд успешно инициализирован!";
+          console.log("WebChannel инициализирован, бэкенд доступен");
+
+          // Загружаем изображения после инициализации канала
+          this.loadAlbumImages();
+
+          // Подписываемся на сигнал с обработкой ошибок
+          try {
+            if (
+              typeof window.backend.albumImagesChanged.connect === "function"
+            ) {
+              window.backend.albumImagesChanged.connect(() => {
+                this.errr = "Получен сигнал об изменении изображений альбома";
+                console.log("Получен сигнал об изменении изображений альбома");
+                this.loadAlbumImages();
+              });
+              this.errr =
+                "Подписка на сигнал albumImagesChanged выполнена успешно";
+            } else {
+              this.errr = "Предупреждение: метод connect для сигнала не найден";
+              console.warn("Метод connect для сигнала не найден");
+            }
+          } catch (error) {
+            this.errr = `Ошибка при подписке на сигнал: ${error}`;
+            console.error("Ошибка при подписке на сигнал:", error);
+          }
+        },
+        (error: any) => {
+          // Обработка ошибки при создании WebChannel
+          this.errr = `Ошибка при создании WebChannel: ${error}`;
+          console.error("Ошибка при создании WebChannel:", error);
+          this.useDevMode();
+        }
+      );
+    } catch (error) {
+      // Общая обработка ошибок
+      this.errr = `Критическая ошибка в initQtConnection: ${error}`;
+      console.error("Критическая ошибка в initQtConnection:", error);
+      this.useDevMode();
+    }
   }
 
-  // Новый метод для режима разработки
+  // Улучшенный метод для режима разработки
   useDevMode() {
-    setTimeout(() => {
+    this.errr = "Переход в режим разработки...";
+    console.log("Переход в режим разработки");
+
+    try {
       const albumImages = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -134,40 +237,106 @@ export default class HomeView extends Vue {
           albumImages.push(key.replace("album_", ""));
         }
       }
+
       this.albumImages = albumImages;
       this.loading = false;
-      this.errr = ` "Режим разработки: загружено",
-        ${albumImages.length},
-        "изображений"`;
-    }, 500);
+      this.errr = `Режим разработки: загружено ${albumImages.length} изображений`;
+      console.log(
+        `Режим разработки: загружено ${albumImages.length} изображений`
+      );
+
+      // Добавляем тестовое изображение, если альбом пуст
+      if (albumImages.length === 0) {
+        this.errr = "Альбом пуст, добавляем тестовое изображение";
+        console.log("Альбом пуст, добавляем тестовое изображение");
+
+        // Создаем простой SVG как тестовое изображение
+        const testSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+        <rect x="10" y="10" width="180" height="180" fill="#f0f0f0" stroke="#333" stroke-width="2"/>
+        <text x="100" y="100" font-family="Arial" font-size="16" text-anchor="middle">Тестовое изображение</text>
+        <circle cx="100" cy="70" r="30" fill="#ff9999"/>
+        <path d="M50,150 Q100,100 150,150" stroke="#333" stroke-width="3" fill="none"/>
+      </svg>`;
+
+        const testFileName = `usersavedraw-010124-120000.svg`;
+        localStorage.setItem(`album_${testFileName}`, testSvg);
+
+        // Обновляем список
+        this.albumImages = [testFileName];
+        this.errr = "Добавлено тестовое изображение в режиме разработки";
+        console.log("Добавлено тестовое изображение в режиме разработки");
+      }
+    } catch (error) {
+      this.errr = `Ошибка в режиме разработки: ${error}`;
+      console.error("Ошибка в режиме разработки:", error);
+      this.albumImages = [];
+      this.loading = false;
+    }
   }
 
   // Улучшенный метод загрузки изображений
+  // Улучшенный метод загрузки изображений
   loadAlbumImages() {
     this.errr = "Вызван метод loadAlbumImages()";
+    console.log("Вызван метод loadAlbumImages()");
     this.loading = true;
 
     if (window.backend) {
       this.errr = "Используем бэкенд для загрузки изображений";
-      window.backend
-        .getAlbumImages()
-        .then((images: string) => {
-          this.errr = `Получены изображения альбома: ${images}`;
-          if (Array.isArray(images)) {
-            this.albumImages = images;
-          }
+      console.log("Используем бэкенд для загрузки изображений");
+
+      try {
+        // Проверяем, что метод существует
+        if (typeof window.backend.getAlbumImages !== "function") {
+          this.errr = "Ошибка: метод getAlbumImages не найден в backend";
+          console.error("Метод getAlbumImages не найден в backend");
+          this.useDevMode();
+          return;
+        }
+
+        const loadTimeout = setTimeout(() => {
+          this.errr = "Превышено время ожидания загрузки изображений";
+          console.warn("Превышено время ожидания загрузки изображений");
           this.loading = false;
-        })
-        .catch((error: string) => {
-          console.error("Ошибка при получении изображений альбома:", error);
-          this.loading = false;
-          // Показываем пользователю сообщение об ошибке
-          alert(
-            "Не удалось загрузить изображения. Пожалуйста, попробуйте обновить страницу."
-          );
-        });
+        }, 10000); // 10 секунд на загрузку
+
+        window.backend
+          .getAlbumImages()
+          .then((images: any) => {
+            clearTimeout(loadTimeout);
+            this.errr = `Получены изображения альбома: ${JSON.stringify(
+              images
+            )}`;
+            console.log("Получены изображения альбома:", images);
+
+            if (Array.isArray(images)) {
+              this.albumImages = images;
+              this.errr = `Загружено ${images.length} изображений`;
+            } else {
+              this.errr =
+                "Предупреждение: полученные данные не являются массивом";
+              console.warn("Полученные данные не являются массивом:", images);
+              this.albumImages = [];
+            }
+            this.loading = false;
+          })
+          .catch((error: any) => {
+            clearTimeout(loadTimeout);
+            this.errr = `Ошибка при получении изображений: ${error}`;
+            console.error("Ошибка при получении изображений альбома:", error);
+            this.loading = false;
+            this.useDevMode();
+          });
+      } catch (error) {
+        this.errr = `Критическая ошибка при вызове getAlbumImages: ${error}`;
+        console.error("Критическая ошибка при вызове getAlbumImages:", error);
+        this.loading = false;
+        this.useDevMode();
+      }
     } else {
-      console.error("Backend недоступен для загрузки изображений");
+      this.errr =
+        "Backend недоступен для загрузки изображений, используем режим разработки";
+      console.warn("Backend недоступен для загрузки изображений");
       this.useDevMode();
     }
   }
