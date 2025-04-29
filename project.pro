@@ -28,14 +28,11 @@ RESOURCES += \
     resources.qrc
 
 # Правила для копирования файлов Vue.js и drawings
+# Изменено - убрано копирование папки drawings
 win32 {
     QMAKE_POST_LINK += mkdir -p $$shell_path($$DESTDIR/frontend/dist) && \
-                      xcopy /E /I /Y $$shell_path($$PWD/vue-client/dist) $$shell_path($$DESTDIR/frontend/dist) && \
-                      mkdir -p $$shell_path($$DESTDIR/drawings) && \
-                      xcopy /E /I /Y $$shell_path($$PWD/cpp-server/src/drawings) $$shell_path($$DESTDIR/drawings)
+                      xcopy /E /I /Y $$shell_path($$PWD/vue-client/dist) $$shell_path($$DESTDIR/frontend/dist)
 } else {
     QMAKE_POST_LINK += mkdir -p $$shell_path($$DESTDIR/frontend/dist) && \
-                      cp -r $$shell_path($$PWD/vue-client/dist) $$shell_path($$DESTDIR/frontend) && \
-                      mkdir -p $$shell_path($$DESTDIR/drawings) && \
-                      cp -r $$shell_path($$PWD/cpp-server/src/drawings) $$shell_path($$DESTDIR)
+                      cp -r $$shell_path($$PWD/vue-client/dist) $$shell_path($$DESTDIR/frontend)
 }

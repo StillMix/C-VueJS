@@ -27,6 +27,10 @@ public:
             fileName = fileName.mid(1);
         }
         QDir dir("./frontend/dist/img");
+if (!dir.exists()) {
+    dir.mkpath(".");
+    qDebug() << "Создана директория для изображений:" << dir.absolutePath();
+}
         // Формируем путь к файлу
         QString filePath = QDir::current().filePath("./frontend/dist/img/" + fileName);
         qDebug() << "Полный путь к файлу:" << filePath;

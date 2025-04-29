@@ -167,7 +167,7 @@ first: all
 bin/VueQtApp:  $(OBJECTS)  
 	@test -d bin/ || mkdir -p bin/
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
-	mkdir -p /home/still/Desktop/C++/bin/frontend/dist && cp -r /home/still/Desktop/C++/vue-client/dist /home/still/Desktop/C++/bin/frontend && mkdir -p /home/still/Desktop/C++/bin/drawings && cp -r /home/still/Desktop/C++/cpp-server/src/drawings /home/still/Desktop/C++/bin
+	mkdir -p /home/still/Desktop/C++/bin/frontend/dist && cp -r /home/still/Desktop/C++/vue-client/dist /home/still/Desktop/C++/bin/frontend
 
 Makefile: project.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf \
