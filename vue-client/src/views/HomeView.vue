@@ -5,7 +5,7 @@
       <h1 class="home__title">Альбом</h1>
       <p class="home__subtitle">Сохраненные рисунки</p>
 
-      <div v-if="loading" class="home__loading">Загрузка изображений...</div>
+      <div v-if="loading" class="home__loading">{{ errr }}</div>
 
       <div v-else-if="albumImages.length === 0" class="home__empty">
         <p>В альбоме пока нет изображений</p>
@@ -62,49 +62,113 @@ export default class HomeView extends Vue {
   loading = true;
   selectedImage: string | null = null;
   svgContent = "";
+  errr = "";
+
+  // Изменения в HomeView.vue
+  // Метод mounted для более надежной инициализации
 
   mounted() {
-    this.loadAlbumImages();
+    // Индикатор загрузки
+    this.loading = true;
 
-    // Подписываемся на сигнал обновления альбома, если есть бэкенд
+    // Проверяем, доступен ли бэкенд сразу
     if (window.backend) {
+      this.errr = "Бэкенд доступен сразу, загружаем изображения";
+      this.loadAlbumImages();
+
+      // Подписываемся на сигнал обновления альбома
       window.backend.albumImagesChanged.connect(() => {
-        console.log("Получен сигнал об изменении изображений альбома");
+        this.errr = "Получен сигнал об изменении изображений альбома";
         this.loadAlbumImages();
       });
+    } else {
+      console.log("Бэкенд недоступен, ожидаем инициализацию");
+
+      // Проверяем наличие WebChannel
+      if (window.QWebChannel && window.qt && window.qt.webChannelTransport) {
+        this.errr = "WebChannel обнаружен, инициализируем соединение";
+        this.initQtConnection();
+      } else {
+        this.errr = "WebChannel не обнаружен, используем режим разработки";
+        // Для режима разработки загружаем из localStorage
+        this.useDevMode();
+
+        // Добавляем слушатель события, который выполнится, когда окно загрузится полностью
+        window.addEventListener("load", () => {
+          this.errr = "Окно полностью загружено, повторная проверка бэкенда";
+          if (window.backend) {
+            this.loadAlbumImages();
+          }
+        });
+      }
     }
   }
 
+  // Новый метод для инициализации Qt соединения
+  initQtConnection() {
+    new window.QWebChannel(
+      window.qt && window.qt.webChannelTransport,
+      (channel: any) => {
+        window.backend = channel.objects.backend;
+        console.log("WebChannel инициализирован, бэкенд доступен");
+
+        // Загружаем изображения после инициализации канала
+        this.loadAlbumImages();
+
+        // Подписываемся на сигнал
+        window.backend.albumImagesChanged.connect(() => {
+          console.log("Получен сигнал об изменении изображений альбома");
+          this.loadAlbumImages();
+        });
+      }
+    );
+  }
+
+  // Новый метод для режима разработки
+  useDevMode() {
+    setTimeout(() => {
+      const albumImages = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("album_")) {
+          albumImages.push(key.replace("album_", ""));
+        }
+      }
+      this.albumImages = albumImages;
+      this.loading = false;
+      this.errr = ` "Режим разработки: загружено",
+        ${albumImages.length},
+        "изображений"`;
+    }, 500);
+  }
+
+  // Улучшенный метод загрузки изображений
   loadAlbumImages() {
+    this.errr = "Вызван метод loadAlbumImages()";
     this.loading = true;
 
     if (window.backend) {
+      this.errr = "Используем бэкенд для загрузки изображений";
       window.backend
         .getAlbumImages()
-        .then((images: any) => {
-          console.log("Получены изображения альбома:", images);
+        .then((images: string) => {
+          this.errr = `Получены изображения альбома: ${images}`;
           if (Array.isArray(images)) {
             this.albumImages = images;
           }
           this.loading = false;
         })
-        .catch((error: any) => {
+        .catch((error: string) => {
           console.error("Ошибка при получении изображений альбома:", error);
           this.loading = false;
+          // Показываем пользователю сообщение об ошибке
+          alert(
+            "Не удалось загрузить изображения. Пожалуйста, попробуйте обновить страницу."
+          );
         });
     } else {
-      // Режим разработки - загружаем из localStorage
-      setTimeout(() => {
-        const albumImages: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith("album_")) {
-            albumImages.push(key.replace("album_", ""));
-          }
-        }
-        this.albumImages = albumImages;
-        this.loading = false;
-      }, 500); // Имитация задержки загрузки
+      console.error("Backend недоступен для загрузки изображений");
+      this.useDevMode();
     }
   }
 
