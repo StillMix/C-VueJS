@@ -200,7 +200,7 @@ bool Backend::saveSvgImage(const QString &svgData, const QString &fileName) {
     }
     
     // Путь для сохранения в альбоме (другая директория)
-    QString albumPath = QDir::current().filePath("./frontend/dist/album/");
+    QString albumPath = QDir::current().filePath("./frontend/dist/img/");
     QDir albumDir(albumPath);
     
     // Создаем директорию, если она не существует
@@ -247,7 +247,7 @@ QStringList Backend::getAlbumImages() {
     QStringList images;
     
     // Путь к директории с изображениями альбома
-    QString path = "./frontend/dist/album";
+    QString path = "./frontend/dist/img";
     qDebug() << "Ищем изображения в директории альбома:" << path;
     
     QDir directory(path);
