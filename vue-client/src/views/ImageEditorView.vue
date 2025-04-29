@@ -226,6 +226,8 @@ export default class ImageEditorView extends Vue {
   }
 
   // Метод для сохранения рисунка в SVG
+  // В методе saveToAlbum() в файле vue-client/src/views/ImageEditorView.vue:
+
   saveToAlbum() {
     const canvas = this.$refs.drawingCanvas as InstanceType<
       typeof DrawingCanvas

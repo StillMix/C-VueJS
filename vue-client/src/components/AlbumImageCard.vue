@@ -40,11 +40,13 @@ export default class AlbumImageCard extends Vue {
     this.loadSvgContent();
   }
 
+  // В методе loadSvgContent() в файле vue-client/src/components/AlbumImageCard.vue:
+
   async loadSvgContent() {
     try {
       if (window.backend) {
         // В режиме с Qt-бэкендом загружаем SVG через URL
-        this.svgContent = `<img src="album/${this.image}" alt="${this.imageCaption}" class="album-image-card__svg" />`;
+        this.svgContent = `<img src="drawings://album/${this.image}" alt="${this.imageCaption}" class="album-image-card__svg" />`;
       } else {
         // В режиме разработки используем localStorage
         const svgData = localStorage.getItem(`album_${this.image}`);

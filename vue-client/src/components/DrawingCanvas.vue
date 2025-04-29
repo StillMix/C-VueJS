@@ -399,8 +399,10 @@ export default class DrawingCanvas extends Vue {
       }
 
       // Добавляем линию к текущему пути
-      const d = currentPath.getAttribute("d");
-      currentPath.setAttribute("d", `${d} L${cmd.x},${cmd.y}`);
+      if (currentPath) {
+        const d = currentPath.getAttribute("d");
+        currentPath.setAttribute("d", `${d} L${cmd.x},${cmd.y}`);
+      }
 
       // Обновляем последние координаты
       lastX = cmd.x;

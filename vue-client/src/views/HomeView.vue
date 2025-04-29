@@ -122,22 +122,24 @@ export default class HomeView extends Vue {
     document.body.classList.remove("modal-open");
   }
 
-  async loadSvgContent(imageName: string) {
-    try {
-      if (window.backend) {
-        // В режиме с Qt-бэкендом загружаем SVG через URL
-        this.svgContent = `<img src="album/${imageName}" alt="SVG изображение" class="home__modal-svg" />`;
-      } else {
-        // В режиме разработки используем localStorage
-        const svgData = localStorage.getItem(`album_${imageName}`);
-        if (svgData) {
-          this.svgContent = svgData;
-        }
+  // В методе loadSvgContent() в файле vue-client/src/views/HomeView.vue:
+
+async loadSvgContent(imageName: string) {
+  try {
+    if (window.backend) {
+      // В режиме с Qt-бэкендом загружаем SVG через URL
+      this.svgContent = `<img src="drawings://album/${imageName}" alt="SVG изображение" class="home__modal-svg" />`;
+    } else {
+      // В режиме разработки используем localStorage
+      const svgData = localStorage.getItem(`album_${imageName}`);
+      if (svgData) {
+        this.svgContent = svgData;
       }
-    } catch (error) {
-      console.error("Ошибка при загрузке SVG:", error);
     }
+  } catch (error) {
+    console.error("Ошибка при загрузке SVG:", error);
   }
+}
 
   deleteAlbumImage(imageName: string) {
     if (confirm("Вы уверены, что хотите удалить это изображение из альбома?")) {
