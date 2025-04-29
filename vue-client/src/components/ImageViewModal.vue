@@ -11,10 +11,6 @@
             <span class="image-modal__btn-icon">✏️</span>
             Рисовать
           </button>
-          <button class="image-modal__btn" @click="$emit('download')">
-            <span class="image-modal__btn-icon">⬇️</span>
-            Скачать
-          </button>
           <button
             class="image-modal__btn image-modal__btn--delete"
             @click="$emit('delete')"
