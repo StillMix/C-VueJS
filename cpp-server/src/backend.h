@@ -15,6 +15,7 @@ public:
     
 public slots:
     // Методы, которые будут вызываться из JavaScript
+    QStringList getAlbumImages();
     QString getMessage();
     void processData(const QString &data);
     int calculate(int a, int b);
@@ -34,7 +35,6 @@ signals:
     void imagesChanged();
     
 private:
-    QStringList getAlbumImages();
     QString m_message;
 };
 

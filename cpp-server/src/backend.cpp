@@ -248,36 +248,37 @@ QStringList Backend::getAlbumImages() {
     
     // Путь к директории с изображениями альбома
     QString path = "./frontend/dist/img";
-    qDebug() << "Ищем изображения в директории альбома:" << path;
+    qDebug() << "Ищем изображения SVG в директории: " << path;
     
     QDir directory(path);
     if (!directory.exists()) {
-        qWarning() << "Директория альбома" << path << "не существует!";
+        qWarning() << "Директория" << path << "не существует!";
+        qDebug() << "Текущая директория:" << QDir::currentPath();
         
         // Создаем директорию, если она не существует
         if (directory.mkpath(".")) {
-            qDebug() << "Директория альбома успешно создана";
+            qDebug() << "Директория успешно создана";
         } else {
-            qWarning() << "Не удалось создать директорию альбома!";
+            qWarning() << "Не удалось создать директорию!";
         }
-        
-        return images; // Возвращаем пустой список
+        return images;
     }
     
-    // Фильтр для поиска SVG файлов
+    // Фильтр для поиска только SVG файлов
     QStringList filters;
     filters << "*.svg";
     directory.setNameFilters(filters);
     
     // Получаем список файлов, соответствующих фильтру
     QFileInfoList fileList = directory.entryInfoList();
-    qDebug() << "Найдено файлов в альбоме:" << fileList.size();
+    qDebug() << "Найдено SVG файлов:" << fileList.size();
     
     // Проходим по списку файлов и добавляем их имена в результат
     for (const QFileInfo &fileInfo : fileList) {
-        qDebug() << "Добавляем файл альбома:" << fileInfo.fileName();
+        qDebug() << "Добавляем файл:" << fileInfo.fileName();
         images.append(fileInfo.fileName());
     }
     
+    qDebug() << "Всего отправляем" << images.size() << "SVG изображений";
     return images;
 }
