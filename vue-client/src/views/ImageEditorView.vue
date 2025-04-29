@@ -136,9 +136,15 @@ export default class ImageEditorView extends Vue {
     if (!this.image) return "";
 
     try {
+      // Проверяем, начинается ли путь с "userfoto-" (для загруженных пользователем изображений)
+      if (this.image.startsWith("userfoto-")) {
+        return `./img/${this.image}`;
+      }
+
+      // Для стандартных изображений из ресурсов приложения
       return require(`@/assets/Drawings/${this.image}`);
     } catch (e) {
-      console.error(e);
+      console.error("Ошибка при загрузке изображения:", e);
       return "";
     }
   }
