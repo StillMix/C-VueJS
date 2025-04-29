@@ -5,9 +5,7 @@
       <h1 class="home__title">Альбом</h1>
       <p class="home__subtitle">Сохраненные рисунки</p>
 
-      <div v-if="loading" class="home__loading">
-        Загрузка изображений...
-      </div>
+      <div v-if="loading" class="home__loading">Загрузка изображений...</div>
 
       <div v-else-if="albumImages.length === 0" class="home__empty">
         <p>В альбоме пока нет изображений</p>
@@ -61,9 +59,9 @@ import AlbumImageCard from "@/components/AlbumImageCard.vue";
 })
 export default class HomeView extends Vue {
   albumImages: string[] = [];
-  loading: boolean = true;
+  loading = true;
   selectedImage: string | null = null;
-  svgContent: string = "";
+  svgContent = "";
 
   mounted() {
     this.loadAlbumImages();
@@ -124,22 +122,22 @@ export default class HomeView extends Vue {
 
   // В методе loadSvgContent() в файле vue-client/src/views/HomeView.vue:
 
-async loadSvgContent(imageName: string) {
-  try {
-    if (window.backend) {
-      // В режиме с Qt-бэкендом загружаем SVG через URL
-      this.svgContent = `<img src="drawings://album/${imageName}" alt="SVG изображение" class="home__modal-svg" />`;
-    } else {
-      // В режиме разработки используем localStorage
-      const svgData = localStorage.getItem(`album_${imageName}`);
-      if (svgData) {
-        this.svgContent = svgData;
+  async loadSvgContent(imageName: string) {
+    try {
+      if (window.backend) {
+        // В режиме с Qt-бэкендом загружаем SVG через URL
+        this.svgContent = `<img src="drawings://album/${imageName}" alt="SVG изображение" class="home__modal-svg" />`;
+      } else {
+        // В режиме разработки используем localStorage
+        const svgData = localStorage.getItem(`album_${imageName}`);
+        if (svgData) {
+          this.svgContent = svgData;
+        }
       }
+    } catch (error) {
+      console.error("Ошибка при загрузке SVG:", error);
     }
-  } catch (error) {
-    console.error("Ошибка при загрузке SVG:", error);
   }
-}
 
   deleteAlbumImage(imageName: string) {
     if (confirm("Вы уверены, что хотите удалить это изображение из альбома?")) {
@@ -386,3 +384,4 @@ async loadSvgContent(imageName: string) {
     }
   }
 }
+</style>

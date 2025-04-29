@@ -34,7 +34,7 @@ import { Options, Vue } from "vue-class-component";
 })
 export default class AlbumImageCard extends Vue {
   image!: string;
-  svgContent: string = "";
+  svgContent = "";
 
   mounted() {
     this.loadSvgContent();
