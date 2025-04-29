@@ -92,9 +92,9 @@
             </button>
             <button
               class="image-editor__btn image-editor__btn--save"
-              @click="downloadDrawing"
+              @click="saveToAlbum"
             >
-              Сохранить
+              Сохранить в альбом
             </button>
           </div>
         </div>
@@ -161,7 +161,6 @@ export default class ImageEditorView extends Vue {
     const canvas = this.$refs.drawingCanvas as InstanceType<
       typeof DrawingCanvas
     >;
-    typeof DrawingCanvas;
     if (canvas) {
       canvas.clearDrawing();
       this.hasDrawn = false;
@@ -185,6 +184,7 @@ export default class ImageEditorView extends Vue {
       this.$router.back();
     }
   }
+
   startReplay(speed: number) {
     const canvas = this.$refs.drawingCanvas as InstanceType<
       typeof DrawingCanvas
@@ -213,40 +213,69 @@ export default class ImageEditorView extends Vue {
     this.isReplaying = false;
   }
 
-  replayInPreview() {
-    // В этой версии просто закрываем предпросмотр и запускаем воспроизведение
-  }
-  // Удалён метод finishDrawing, так как он объединён с saveDrawing
-
+  // Метод для сохранения рисунка (показывает предпросмотр)
   saveDrawing() {
     const canvas = this.$refs.drawingCanvas as InstanceType<
       typeof DrawingCanvas
     >;
-    typeof DrawingCanvas;
     if (canvas) {
       // Получаем изображение только с линиями и отображаем предпросмотр
       this.linesOnlyImage = canvas.getLinesOnly();
       this.showPreview = true;
-
-      // Если мы решим не показывать предпросмотр, то код ниже можно раскомментировать
-      /*
-      const imageWithLines = canvas.getImageWithLines();
-      
-      // В реальном приложении здесь был бы код для сохранения изображения
-      // Например, отправка на сервер
-
-      // Временно сохраняем в localStorage для демонстрации
-      localStorage.setItem("savedDrawing", imageWithLines);
-
-      // Показываем сообщение пользователю
-      alert("Изображение успешно сохранено!");
-
-      // Возвращаемся на предыдущую страницу
-      this.$router.back();
-      */
     }
   }
 
+  // Метод для сохранения рисунка в SVG
+  saveToAlbum() {
+    const canvas = this.$refs.drawingCanvas as InstanceType<
+      typeof DrawingCanvas
+    >;
+    if (canvas) {
+      try {
+        // Получаем SVG данные
+        const svgData = canvas.getSvgImage();
+
+        // Генерируем имя файла с текущей датой и временем
+        const now = new Date();
+        const dateStr = `${String(now.getDate()).padStart(2, "0")}${String(
+          now.getMonth() + 1
+        ).padStart(2, "0")}${String(now.getFullYear()).slice(-2)}`;
+        const timeStr = `${String(now.getHours()).padStart(2, "0")}${String(
+          now.getMinutes()
+        ).padStart(2, "0")}${String(now.getSeconds()).padStart(2, "0")}`;
+        const fileName = `usersavedraw-${dateStr}-${timeStr}.svg`;
+
+        // Проверяем доступность бэкенда
+        if (window.backend) {
+          // Сохраняем через C++ бэкенд
+          window.backend
+            .saveSvgImage(svgData, fileName)
+            .then((success: boolean) => {
+              if (success) {
+                alert("Рисунок успешно сохранен в альбом!");
+                this.$router.push("/"); // Переходим на главную страницу (альбом)
+              } else {
+                alert("Произошла ошибка при сохранении рисунка");
+              }
+            })
+            .catch((error: string) => {
+              console.error("Ошибка при сохранении SVG:", error);
+              alert("Произошла ошибка при сохранении рисунка");
+            });
+        } else {
+          // Режим разработки - сохраняем в localStorage
+          localStorage.setItem(`album_${fileName}`, svgData);
+          alert("Рисунок успешно сохранен в альбом (режим разработки)!");
+          this.$router.push("/");
+        }
+      } catch (error) {
+        console.error("Ошибка при создании SVG:", error);
+        alert("Произошла ошибка при создании SVG");
+      }
+    }
+  }
+
+  // Метод для скачивания рисунка (не используется в текущей версии)
   downloadDrawing() {
     if (!this.linesOnlyImage) return;
 
@@ -258,12 +287,6 @@ export default class ImageEditorView extends Vue {
 
     // Закрываем модальное окно после скачивания
     this.showPreview = false;
-
-    // Временно сохраняем в localStorage для демонстрации
-    localStorage.setItem("savedDrawing", this.linesOnlyImage);
-
-    // Возвращаемся на предыдущую страницу
-    this.$router.back();
   }
 }
 </script>
@@ -308,13 +331,12 @@ export default class ImageEditorView extends Vue {
 
   &__canvas-container {
     margin: 20px 0;
-    height: 600px; // Уменьшил высоту для лучшей производительности
+    height: 600px;
     width: 800px;
     margin-left: auto;
     margin-right: auto;
   }
 
-  /* Остальные стили без изменений */
   &__controls {
     display: flex;
     justify-content: space-between;

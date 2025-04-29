@@ -336,7 +336,81 @@ export default class DrawingCanvas extends Vue {
     this.drawingCommands = []; // Очищаем историю рисования
     this.$emit("drawing-updated");
   }
+  // Добавим в DrawingCanvas.vue новый метод для экспорта в SVG
+  getSvgImage(): string {
+    // Создаем временный SVG элемент
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", this.canvasWidth.toString());
+    svg.setAttribute("height", this.canvasHeight.toString());
+    svg.setAttribute("viewBox", `0 0 ${this.canvasWidth} ${this.canvasHeight}`);
 
+    // Добавляем белый фон
+    const background = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "rect"
+    );
+    background.setAttribute("width", "100%");
+    background.setAttribute("height", "100%");
+    background.setAttribute("fill", "#ffffff");
+    svg.appendChild(background);
+
+    // Если отображаем исходное изображение, добавляем его как фон
+    if (this.showImage && this.originalImage && this.imageLoaded) {
+      const image = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "image"
+      );
+      image.setAttribute("width", "100%");
+      image.setAttribute("height", "100%");
+      image.setAttribute("href", this.imageUrl);
+      svg.appendChild(image);
+    }
+
+    // Добавляем линии из истории рисования
+    let lastX = 0;
+    let lastY = 0;
+    let drawingStarted = false;
+    let currentPath = null;
+
+    for (const cmd of this.drawingCommands) {
+      if (cmd.lift) {
+        drawingStarted = false;
+        continue;
+      }
+
+      if (!drawingStarted) {
+        // Начинаем новый путь
+        currentPath = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        currentPath.setAttribute("fill", "none");
+        currentPath.setAttribute("stroke", cmd.color);
+        currentPath.setAttribute("stroke-width", cmd.width.toString());
+        currentPath.setAttribute("stroke-linecap", "round");
+        currentPath.setAttribute("stroke-linejoin", "round");
+        currentPath.setAttribute("d", `M${cmd.x},${cmd.y}`);
+        svg.appendChild(currentPath);
+
+        lastX = cmd.x;
+        lastY = cmd.y;
+        drawingStarted = true;
+        continue;
+      }
+
+      // Добавляем линию к текущему пути
+      const d = currentPath.getAttribute("d");
+      currentPath.setAttribute("d", `${d} L${cmd.x},${cmd.y}`);
+
+      // Обновляем последние координаты
+      lastX = cmd.x;
+      lastY = cmd.y;
+    }
+
+    // Преобразуем SVG в строку
+    const serializer = new XMLSerializer();
+    return serializer.serializeToString(svg);
+  }
   // Метод для получения данных изображения с линиями
   getImageWithLines(): string {
     // Создаем временный холст для объединения изображения и линий

@@ -22,13 +22,19 @@ public slots:
     // Новый метод для получения списка изображений
     QStringList getDrawingImages();
     bool saveImage(const QString &imageData, const QString &fileName);
+    // Добавим в backend.h новый метод
+    bool deleteImage(const QString &fileName);
+// Добавим в backend.h
+    bool saveSvgImage(const QString &svgData, const QString &fileName);
 signals:
+    void albumImagesChanged();
     // Сигналы, которые будут отправляться в JavaScript
     void dataChanged(const QString &newData);
     void progressUpdated(int progress);
     void imagesChanged();
     
 private:
+    QStringList getAlbumImages();
     QString m_message;
 };
 
