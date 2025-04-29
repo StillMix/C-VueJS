@@ -5,7 +5,10 @@
       <h1 class="home__title">Альбом</h1>
       <p class="home__subtitle">Сохраненные рисунки</p>
 
-      <div v-if="loading" class="home__loading">{{ errr }}</div>
+      <div v-if="loading" class="home__loading">
+        {{ debugInfo }}
+        <div class="home__loading-spinner"></div>
+      </div>
 
       <div v-else-if="albumImages.length === 0" class="home__empty">
         <p>В альбоме пока нет изображений</p>
@@ -56,87 +59,94 @@ import AlbumImageCard from "@/components/AlbumImageCard.vue";
     Header,
     AlbumImageCard,
   },
+  data() {
+    return {
+      debugInfo: "Ожидание инициализации...",
+      debugLog: [] as string[],
+    };
+  },
 })
 export default class HomeView extends Vue {
   albumImages: string[] = [];
   loading = true;
   selectedImage: string | null = null;
   svgContent = "";
-  errr = "";
+  debugInfo = "Ожидание инициализации...";
+  debugLog: string[] = [];
 
-  // Изменения в HomeView.vue
-  // Метод mounted для более надежной инициализации
+  // Добавим метод для логирования, который будет обновлять UI
+  logDebug(message: string) {
+    // Обновляем дебаг-массив и строку для отображения
+    this.debugLog.push(message);
+    this.debugInfo = message;
+
+    // Логируем в консоль
+    console.log(message);
+
+    // Явно вызываем обновление компонента
+    this.$forceUpdate();
+  }
 
   mounted() {
-    // Устанавливаем таймаут для отображения статуса инициализации
-    this.errr = "Начало инициализации...";
-    console.log("Начало инициализации HomeView");
-
-    // Индикатор загрузки
+    this.logDebug("Начало инициализации HomeView");
     this.loading = true;
 
     // Проверяем, доступен ли бэкенд сразу
     if (window.backend) {
-      this.errr = "Бэкенд доступен сразу, загружаем изображения";
-      console.log("Бэкенд доступен сразу");
+      this.logDebug("Бэкенд доступен сразу, загружаем изображения");
       this.loadAlbumImages();
 
       // Подписываемся на сигнал обновления альбома
       try {
         window.backend.albumImagesChanged.connect(() => {
-          this.errr = "Получен сигнал об изменении изображений альбома";
+          this.logDebug("Получен сигнал об изменении изображений альбома");
           this.loadAlbumImages();
         });
-        this.errr = "Подписка на сигнал выполнена (прямая инициализация)";
+        this.logDebug("Подписка на сигнал выполнена (прямая инициализация)");
       } catch (error) {
-        this.errr = `Ошибка при подписке на сигнал: ${error}`;
-        console.error("Ошибка при подписке на сигнал:", error);
+        this.logDebug(`Ошибка при подписке на сигнал: ${error}`);
       }
     } else {
-      this.errr = "Бэкенд недоступен сразу, ожидаем инициализацию";
-      console.log("Бэкенд недоступен, ожидаем инициализацию");
+      this.logDebug("Бэкенд недоступен сразу, ожидаем инициализацию");
 
       // Устанавливаем таймаут для инициализации, чтобы не зависнуть навсегда
       const initializationTimeout = setTimeout(() => {
         if (this.loading) {
-          this.errr =
-            "Превышено время ожидания инициализации, переходим в режим разработки";
-          console.warn("Превышено время ожидания инициализации");
+          this.logDebug(
+            "Превышено время ожидания инициализации, переходим в режим разработки"
+          );
           this.useDevMode();
         }
       }, 5000); // 5 секунд на инициализацию
 
       // Проверяем наличие WebChannel
       if (window.QWebChannel && window.qt && window.qt.webChannelTransport) {
-        this.errr = "WebChannel обнаружен, инициализируем соединение";
-        console.log("WebChannel обнаружен, инициализируем соединение");
+        this.logDebug("WebChannel обнаружен, инициализируем соединение");
         this.initQtConnection();
 
         // Очищаем таймаут, если инициализация началась
         clearTimeout(initializationTimeout);
       } else {
-        this.errr =
-          "WebChannel не обнаружен, пробуем повторную инициализацию через 1 секунду";
-        console.log("WebChannel не обнаружен, пробуем повторную инициализацию");
+        this.logDebug(
+          "WebChannel не обнаружен, пробуем повторную инициализацию через 1 секунду"
+        );
 
         // Пробуем еще раз через 1 секунду
         setTimeout(() => {
-          this.errr = "Повторная проверка наличия WebChannel";
-          console.log("Повторная проверка наличия WebChannel");
+          this.logDebug("Повторная проверка наличия WebChannel");
 
           if (
             window.QWebChannel &&
             window.qt &&
             window.qt.webChannelTransport
           ) {
-            this.errr = "WebChannel обнаружен при повторной проверке";
-            console.log("WebChannel обнаружен при повторной проверке");
+            this.logDebug("WebChannel обнаружен при повторной проверке");
             clearTimeout(initializationTimeout);
             this.initQtConnection();
           } else {
-            this.errr =
-              "WebChannel не обнаружен при повторной проверке, переходим в режим разработки";
-            console.log("WebChannel не обнаружен при повторной проверке");
+            this.logDebug(
+              "WebChannel не обнаружен при повторной проверке, переходим в режим разработки"
+            );
             clearTimeout(initializationTimeout);
             this.useDevMode();
           }
@@ -144,8 +154,7 @@ export default class HomeView extends Vue {
 
         // Добавляем слушатель события, который выполнится, когда окно загрузится полностью
         window.addEventListener("load", () => {
-          this.errr = "Окно полностью загружено, повторная проверка бэкенда";
-          console.log("Окно полностью загружено, повторная проверка бэкенда");
+          this.logDebug("Окно полностью загружено, повторная проверка бэкенда");
 
           if (window.backend) {
             clearTimeout(initializationTimeout);
@@ -158,76 +167,61 @@ export default class HomeView extends Vue {
 
   // Улучшенный метод для инициализации Qt соединения
   initQtConnection() {
-    this.errr = "Начинаем инициализацию WebChannel...";
+    this.logDebug("Начинаем инициализацию WebChannel...");
 
     try {
       if (!window.qt || !window.qt.webChannelTransport) {
-        this.errr = "Ошибка: webChannelTransport недоступен!";
-        console.error("webChannelTransport недоступен!");
+        this.logDebug("Ошибка: webChannelTransport недоступен!");
         this.useDevMode();
         return;
       }
 
-      this.errr = "Создаем новый QWebChannel...";
-      new window.QWebChannel(
-        window.qt.webChannelTransport,
-        (channel: any) => {
-          this.errr = "WebChannel создан, получаем объект backend...";
+      this.logDebug("Создаем новый QWebChannel...");
 
-          if (!channel || !channel.objects || !channel.objects.backend) {
-            this.errr = "Ошибка: объект backend не найден в канале!";
-            console.error("Объект backend не найден в канале!");
-            this.useDevMode();
-            return;
-          }
+      new window.QWebChannel(window.qt.webChannelTransport, (channel: any) => {
+        this.logDebug("WebChannel создан, получаем объект backend...");
 
-          window.backend = channel.objects.backend;
-          this.errr = "Бэкенд успешно инициализирован!";
-          console.log("WebChannel инициализирован, бэкенд доступен");
-
-          // Загружаем изображения после инициализации канала
-          this.loadAlbumImages();
-
-          // Подписываемся на сигнал с обработкой ошибок
-          try {
-            if (
-              typeof window.backend.albumImagesChanged.connect === "function"
-            ) {
-              window.backend.albumImagesChanged.connect(() => {
-                this.errr = "Получен сигнал об изменении изображений альбома";
-                console.log("Получен сигнал об изменении изображений альбома");
-                this.loadAlbumImages();
-              });
-              this.errr =
-                "Подписка на сигнал albumImagesChanged выполнена успешно";
-            } else {
-              this.errr = "Предупреждение: метод connect для сигнала не найден";
-              console.warn("Метод connect для сигнала не найден");
-            }
-          } catch (error) {
-            this.errr = `Ошибка при подписке на сигнал: ${error}`;
-            console.error("Ошибка при подписке на сигнал:", error);
-          }
-        },
-        (error: any) => {
-          // Обработка ошибки при создании WebChannel
-          this.errr = `Ошибка при создании WebChannel: ${error}`;
-          console.error("Ошибка при создании WebChannel:", error);
+        if (!channel || !channel.objects || !channel.objects.backend) {
+          this.logDebug("Ошибка: объект backend не найден в канале!");
           this.useDevMode();
+          return;
         }
-      );
+
+        window.backend = channel.objects.backend;
+        this.logDebug("Бэкенд успешно инициализирован!");
+
+        // Загружаем изображения после инициализации канала
+        this.loadAlbumImages();
+
+        // Подписываемся на сигнал с обработкой ошибок
+        try {
+          if (typeof window.backend.albumImagesChanged.connect === "function") {
+            window.backend.albumImagesChanged.connect(() => {
+              this.logDebug("Получен сигнал об изменении изображений альбома");
+              this.loadAlbumImages();
+            });
+            this.logDebug(
+              "Подписка на сигнал albumImagesChanged выполнена успешно"
+            );
+          } else {
+            this.logDebug(
+              "Предупреждение: метод connect для сигнала не найден"
+            );
+          }
+        } catch (error) {
+          this.logDebug(`Ошибка при подписке на сигнал: ${error}`);
+        }
+      });
     } catch (error) {
       // Общая обработка ошибок
-      this.errr = `Критическая ошибка в initQtConnection: ${error}`;
-      console.error("Критическая ошибка в initQtConnection:", error);
+      this.logDebug(`Критическая ошибка в initQtConnection: ${error}`);
       this.useDevMode();
     }
   }
 
   // Улучшенный метод для режима разработки
   useDevMode() {
-    this.errr = "Переход в режим разработки...";
-    console.log("Переход в режим разработки");
+    this.logDebug("Переход в режим разработки...");
 
     try {
       const albumImages = [];
@@ -240,15 +234,13 @@ export default class HomeView extends Vue {
 
       this.albumImages = albumImages;
       this.loading = false;
-      this.errr = `Режим разработки: загружено ${albumImages.length} изображений`;
-      console.log(
+      this.logDebug(
         `Режим разработки: загружено ${albumImages.length} изображений`
       );
 
       // Добавляем тестовое изображение, если альбом пуст
       if (albumImages.length === 0) {
-        this.errr = "Альбом пуст, добавляем тестовое изображение";
-        console.log("Альбом пуст, добавляем тестовое изображение");
+        this.logDebug("Альбом пуст, добавляем тестовое изображение");
 
         // Создаем простой SVG как тестовое изображение
         const testSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
@@ -263,40 +255,33 @@ export default class HomeView extends Vue {
 
         // Обновляем список
         this.albumImages = [testFileName];
-        this.errr = "Добавлено тестовое изображение в режиме разработки";
-        console.log("Добавлено тестовое изображение в режиме разработки");
+        this.logDebug("Добавлено тестовое изображение в режиме разработки");
       }
     } catch (error) {
-      this.errr = `Ошибка в режиме разработки: ${error}`;
-      console.error("Ошибка в режиме разработки:", error);
+      this.logDebug(`Ошибка в режиме разработки: ${error}`);
       this.albumImages = [];
       this.loading = false;
     }
   }
 
   // Улучшенный метод загрузки изображений
-  // Улучшенный метод загрузки изображений
   loadAlbumImages() {
-    this.errr = "Вызван метод loadAlbumImages()";
-    console.log("Вызван метод loadAlbumImages()");
+    this.logDebug("Вызван метод loadAlbumImages()");
     this.loading = true;
 
     if (window.backend) {
-      this.errr = "Используем бэкенд для загрузки изображений";
-      console.log("Используем бэкенд для загрузки изображений");
+      this.logDebug("Используем бэкенд для загрузки изображений");
 
       try {
         // Проверяем, что метод существует
         if (typeof window.backend.getAlbumImages !== "function") {
-          this.errr = "Ошибка: метод getAlbumImages не найден в backend";
-          console.error("Метод getAlbumImages не найден в backend");
+          this.logDebug("Ошибка: метод getAlbumImages не найден в backend");
           this.useDevMode();
           return;
         }
 
         const loadTimeout = setTimeout(() => {
-          this.errr = "Превышено время ожидания загрузки изображений";
-          console.warn("Превышено время ожидания загрузки изображений");
+          this.logDebug("Превышено время ожидания загрузки изображений");
           this.loading = false;
         }, 10000); // 10 секунд на загрузку
 
@@ -304,39 +289,36 @@ export default class HomeView extends Vue {
           .getAlbumImages()
           .then((images: any) => {
             clearTimeout(loadTimeout);
-            this.errr = `Получены изображения альбома: ${JSON.stringify(
-              images
-            )}`;
-            console.log("Получены изображения альбома:", images);
+            this.logDebug(
+              `Получены изображения альбома: ${JSON.stringify(images)}`
+            );
 
             if (Array.isArray(images)) {
               this.albumImages = images;
-              this.errr = `Загружено ${images.length} изображений`;
+              this.logDebug(`Загружено ${images.length} изображений`);
             } else {
-              this.errr =
-                "Предупреждение: полученные данные не являются массивом";
-              console.warn("Полученные данные не являются массивом:", images);
+              this.logDebug(
+                "Предупреждение: полученные данные не являются массивом"
+              );
               this.albumImages = [];
             }
             this.loading = false;
           })
           .catch((error: any) => {
             clearTimeout(loadTimeout);
-            this.errr = `Ошибка при получении изображений: ${error}`;
-            console.error("Ошибка при получении изображений альбома:", error);
+            this.logDebug(`Ошибка при получении изображений: ${error}`);
             this.loading = false;
             this.useDevMode();
           });
       } catch (error) {
-        this.errr = `Критическая ошибка при вызове getAlbumImages: ${error}`;
-        console.error("Критическая ошибка при вызове getAlbumImages:", error);
+        this.logDebug(`Критическая ошибка при вызове getAlbumImages: ${error}`);
         this.loading = false;
         this.useDevMode();
       }
     } else {
-      this.errr =
-        "Backend недоступен для загрузки изображений, используем режим разработки";
-      console.warn("Backend недоступен для загрузки изображений");
+      this.logDebug(
+        "Backend недоступен для загрузки изображений, используем режим разработки"
+      );
       this.useDevMode();
     }
   }
@@ -352,8 +334,6 @@ export default class HomeView extends Vue {
     this.svgContent = "";
     document.body.classList.remove("modal-open");
   }
-
-  // В методе loadSvgContent() в файле vue-client/src/views/HomeView.vue:
 
   async loadSvgContent(imageName: string) {
     try {
@@ -445,6 +425,19 @@ export default class HomeView extends Vue {
     padding: 50px 0;
     color: var(--text-color, #ffffff);
     font-size: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  &__loading-spinner {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--accent-color, #f8d0d0);
+    animation: spin 1s linear infinite;
   }
 
   &__empty {
@@ -589,6 +582,12 @@ export default class HomeView extends Vue {
 
   &__modal-btn-icon {
     font-size: 18px;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
