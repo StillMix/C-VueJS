@@ -465,6 +465,7 @@ export default class DrawingCanvas extends Vue {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  background-color: white;
 
   &__image,
   &__drawing {
@@ -476,6 +477,7 @@ export default class DrawingCanvas extends Vue {
   }
 
   &__image {
+    object-fit: contain;
     z-index: 1;
   }
 

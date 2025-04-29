@@ -26,9 +26,9 @@ public:
         if (fileName.startsWith("/")) {
             fileName = fileName.mid(1);
         }
-        
+        QDir dir("./frontend/dist/img");
         // Формируем путь к файлу
-        QString filePath = QDir::current().filePath("drawings/" + fileName);
+        QString filePath = QDir::current().filePath("./frontend/dist/img/" + fileName);
         qDebug() << "Полный путь к файлу:" << filePath;
         
         QFile *file = new QFile(filePath, job);
