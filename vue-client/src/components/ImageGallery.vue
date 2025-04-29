@@ -30,36 +30,34 @@ import ImageCard from "./ImageCard.vue";
     favorites: Array,
   },
   emits: ["image-click", "toggle-favorite"],
-  setup() {
-    // Метод для загрузки изображений альбома
-loadAlbumImages() {
-  if (window.backend) {
-    window.backend.getAlbumImages()
-      .then((images: string[]) => {
-        if (Array.isArray(images)) {
-          this.albumImages = images;
-        }
-      })
-      .catch((error: any) => {
-        console.error('Ошибка при получении изображений альбома:', error);
-      });
-  } else {
-    // Режим разработки - загружаем из localStorage
-    const albumImages: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('album_')) {
-        albumImages.push(key.replace('album_', ''));
-      }
-    }
-    this.albumImages = albumImages;
-  }
-}
-  }
 })
 export default class ImageGallery extends Vue {
   images!: string[];
   favorites!: string[];
+  loadAlbumImages() {
+    if (window.backend) {
+      window.backend
+        .getAlbumImages()
+        .then((images: string[]) => {
+          if (Array.isArray(images)) {
+            this.albumImages = images;
+          }
+        })
+        .catch((error: any) => {
+          console.error("Ошибка при получении изображений альбома:", error);
+        });
+    } else {
+      // Режим разработки - загружаем из localStorage
+      const albumImages: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("album_")) {
+          albumImages.push(key.replace("album_", ""));
+        }
+      }
+      this.albumImages = albumImages;
+    }
+  }
 }
 </script>
 
