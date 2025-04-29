@@ -34,6 +34,8 @@ import ImageCard from "./ImageCard.vue";
 export default class ImageGallery extends Vue {
   images!: string[];
   favorites!: string[];
+  albumImages: string[] = []; // Добавлено определение свойства
+
   loadAlbumImages() {
     if (window.backend) {
       window.backend
